@@ -1346,7 +1346,7 @@ async function callReplicate(model, input) {
 
   var createResp;
   try {
-    createResp = await fetch('https://api.replicate.com/v1/predictions', {
+    createResp = await fetch(window.location.origin + '/api/replicate/predictions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1369,7 +1369,8 @@ async function callReplicate(model, input) {
   while (pred.status !== 'succeeded' && pred.status !== 'failed') {
     if (Date.now() - start > 120000) throw new Error('Timed out after 2 minutes');
     await new Promise(function(r){ setTimeout(r, 1800); });
-    var pollResp = await fetch(pred.urls.get, {
+    var pollUrl = pred.urls.get.replace('https://api.replicate.com/v1/', window.location.origin + '/api/replicate/');
+    var pollResp = await fetch(pollUrl, {
       headers: { 'Authorization': 'Token ' + token }
     });
     pred = await pollResp.json();
