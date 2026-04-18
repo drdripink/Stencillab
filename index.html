@@ -1342,40 +1342,42 @@ function showAuthError(msg) {
 
 async function callReplicate(model, input) {
   var token = STATE.replicateKey || '';
-  if (!token) throw new Error('No Replicate key configured');
-
+  if (!token || token.includes('PASTE')) throw new Error('No Replicate key — add it in Settings');
+  var BASE = '/api/replicate';
   var createResp;
   try {
-    createResp = await fetch(window.location.origin + '/api/replicate/predictions', {
+    createResp = await fetch(BASE + '/predictions', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Token ' + token
-      },
+      headers: {'Content-Type':'application/json','Authorization':'Token ' + token},
       body: JSON.stringify({ version: model, input: input })
     });
   } catch(fetchErr) {
-    throw new Error('Cannot reach Replicate API. Open this app from a hosted URL (not a local file) — see Settings.');
+    try {
+      createResp = await fetch('https://api.replicate.com/v1/predictions', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','Authorization':'Token ' + token},
+        body: JSON.stringify({ version: model, input: input })
+      });
+    } catch(e2) { throw new Error('Cannot reach Replicate API'); }
   }
-
   if (!createResp.ok) {
     var e = await createResp.json().catch(function(){ return {}; });
     throw new Error(e.detail || ('Replicate error ' + createResp.status));
   }
-
   var pred = await createResp.json();
   var start = Date.now();
-
   while (pred.status !== 'succeeded' && pred.status !== 'failed') {
-    if (Date.now() - start > 120000) throw new Error('Timed out after 2 minutes');
-    await new Promise(function(r){ setTimeout(r, 1800); });
-    var pollUrl = pred.urls.get.replace('https://api.replicate.com/v1/', window.location.origin + '/api/replicate/');
-    var pollResp = await fetch(pollUrl, {
-      headers: { 'Authorization': 'Token ' + token }
-    });
+    if (Date.now() - start > 180000) throw new Error('Timed out after 3 minutes');
+    await new Promise(function(r){ setTimeout(r, 2000); });
+    var pollUrl = pred.urls.get.replace('https://api.replicate.com/v1/', BASE + '/');
+    var pollResp;
+    try {
+      pollResp = await fetch(pollUrl, {headers:{'Authorization':'Token ' + token}});
+    } catch(e) {
+      pollResp = await fetch(pred.urls.get, {headers:{'Authorization':'Token ' + token}});
+    }
     pred = await pollResp.json();
   }
-
   if (pred.status === 'failed') throw new Error(pred.error || 'Replicate job failed');
   return pred.output;
 }
