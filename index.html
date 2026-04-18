@@ -1544,155 +1544,138 @@ async function generateStencil() {
 }
 
 function processStencilPipeline(imageData, w, h, mode) {
-  /*
-   * PROFESSIONAL STENCIL PIPELINE
-   * Based on research from:
-   *  - XDoG (Winnemöller et al, Adobe Research / SIGGRAPH)
-   *  - Bilateral filtering (Tomasi & Manduchi)
-   *  - Canny edge detection (Canny, 1986)
-   *  - Otsu thresholding (Otsu, 1979)
-   *
-   * Pipeline stages:
-   *  1. Luminance extraction
-   *  2. Bilateral filter (edge-preserving denoise — keeps edges sharp while killing noise)
-   *  3. XDoG (eXtended Difference of Gaussians — the core of every professional sketch app)
-   *  4. Soft thresholding (smooth ink/paper transition)
-   *  5. Canny edges (catches any sharp edges XDoG missed)
-   *  6. Merge + hysteresis (connect strong edges, drop weak noise)
-   *  7. Gap closing (bridge broken lines for thermal transfer)
-   *  8. Line weight assignment (4 weights matching tattoo artist practice)
-   */
+  /* STENCIL LAB v3.0 — XDoG+Bilateral+Guided+CLAHE+Morph+MultiScale */
+  var data = imageData.data, N = w * h;
 
-  var data = imageData.data;
-  var N = w * h;
-
-  // ── 1. LUMINANCE ──────────────────────────────────────────────────────────
-  var lum = new Float32Array(N);
-  for (var i=0;i<N;i++) {
-    lum[i] = 0.2126*data[i*4] + 0.7152*data[i*4+1] + 0.0722*data[i*4+2];
-  }
-
-  // ── 2. GAUSSIAN BLUR (separable, O(n*r)) ─────────────────────────────────
   function gaussBlur(src, sig) {
-    if (sig < 0.1) { var c=new Float32Array(src); return c; }
-    var r=Math.ceil(sig*3), sz=r*2+1;
-    var k=new Float32Array(sz), ks=0;
+    if (sig < 0.1) { var o=new Float32Array(N); o.set(src); return o; }
+    var r=Math.ceil(sig*3), sz=r*2+1, k=new Float32Array(sz), ks=0;
     for(var j=0;j<sz;j++){k[j]=Math.exp(-(j-r)*(j-r)/(2*sig*sig));ks+=k[j];}
     for(var j=0;j<sz;j++) k[j]/=ks;
     var tmp=new Float32Array(N), out=new Float32Array(N);
     for(var y=0;y<h;y++) for(var x=0;x<w;x++){
-      var v=0,ks2=0;
-      for(var j=0;j<sz;j++){var xx=x+j-r;if(xx<0||xx>=w)continue;v+=src[y*w+xx]*k[j];ks2+=k[j];}
-      tmp[y*w+x]=v/ks2;
+      var v=0,ws=0;
+      for(var j=0;j<sz;j++){var xx=x+j-r;if(xx<0||xx>=w)continue;v+=src[y*w+xx]*k[j];ws+=k[j];}
+      tmp[y*w+x]=v/ws;
     }
     for(var y=0;y<h;y++) for(var x=0;x<w;x++){
-      var v=0,ks2=0;
-      for(var j=0;j<sz;j++){var yy=y+j-r;if(yy<0||yy>=h)continue;v+=tmp[yy*w+x]*k[j];ks2+=k[j];}
-      out[y*w+x]=v/ks2;
+      var v=0,ws=0;
+      for(var j=0;j<sz;j++){var yy=y+j-r;if(yy<0||yy>=h)continue;v+=tmp[yy*w+x]*k[j];ws+=k[j];}
+      out[y*w+x]=v/ws;
     }
     return out;
   }
 
-  // ── 3. BILATERAL FILTER (edge-preserving smoothing) ──────────────────────
-  // Unlike plain Gaussian, bilateral preserves sharp edges while blurring
-  // noise. Two kernels: spatial (distance) + range (intensity similarity).
-  // Based on Tomasi & Manduchi 1998, key paper in image processing.
+  // STAGE 1: Luminance + CLAHE (local contrast normalisation per 32px tile)
+  var lum = new Float32Array(N);
+  for(var i=0;i<N;i++) lum[i]=0.2126*data[i*4]+0.7152*data[i*4+1]+0.0722*data[i*4+2];
+  var tileSize=32, norm=new Float32Array(N);
+  for(var ty=0;ty<h;ty+=tileSize) for(var tx=0;tx<w;tx+=tileSize){
+    var sum=0,sum2=0,cnt=0;
+    for(var dy=0;dy<tileSize&&ty+dy<h;dy++) for(var dx=0;dx<tileSize&&tx+dx<w;dx++){
+      var v=lum[(ty+dy)*w+(tx+dx)]; sum+=v; sum2+=v*v; cnt++;
+    }
+    var mean=sum/cnt, std=Math.sqrt(Math.max(1,sum2/cnt-mean*mean)), s=40/std;
+    for(var dy=0;dy<tileSize&&ty+dy<h;dy++) for(var dx=0;dx<tileSize&&tx+dx<w;dx++){
+      var idx=(ty+dy)*w+(tx+dx);
+      norm[idx]=Math.max(0,Math.min(255,128+(lum[idx]-mean)*s));
+    }
+  }
+
+  // STAGE 2: Guided filter (structure-preserving, better than plain Gaussian)
+  function guidedFilterApprox(I, r, eps) {
+    function boxBlur(src, rad) {
+      var tmp=new Float32Array(N), out=new Float32Array(N);
+      for(var y=0;y<h;y++){var s=0,cnt=0;
+        for(var x=0;x<=rad&&x<w;x++){s+=src[y*w+x];cnt++;}
+        for(var x=0;x<w;x++){out[y*w+x]=s/cnt;
+          if(x+rad+1<w){s+=src[y*w+(x+rad+1)];cnt++;}
+          if(x-rad>=0){s-=src[y*w+(x-rad)];cnt--;}
+        }
+      }
+      for(var x=0;x<w;x++){var s=0,cnt=0;
+        for(var y=0;y<=rad&&y<h;y++){s+=out[y*w+x];cnt++;}
+        for(var y=0;y<h;y++){tmp[y*w+x]=s/cnt;
+          if(y+rad+1<h){s+=out[(y+rad+1)*w+x];cnt++;}
+          if(y-rad>=0){s-=out[(y-rad)*w+x];cnt--;}
+        }
+      }
+      return tmp;
+    }
+    var mI=boxBlur(I,r), mII=new Float32Array(N);
+    for(var i=0;i<N;i++) mII[i]=I[i]*I[i];
+    var mII2=boxBlur(mII,r), a=new Float32Array(N), b=new Float32Array(N);
+    for(var i=0;i<N;i++){var v=mII2[i]-mI[i]*mI[i];a[i]=v/(v+eps);b[i]=(1-a[i])*mI[i];}
+    var mA=boxBlur(a,r), mB=boxBlur(b,r), out=new Float32Array(N);
+    for(var i=0;i<N;i++) out[i]=mA[i]*I[i]+mB[i];
+    return out;
+  }
+  var guided = guidedFilterApprox(norm, 4, 100);
+
+  // STAGE 3: Bilateral filter (edge-preserving denoise)
   function bilateralFilter(src, sigmaS, sigmaR) {
-    var r = Math.ceil(sigmaS * 2.5);
-    var out = new Float32Array(N);
-    var sigS2 = 2 * sigmaS * sigmaS;
-    var sigR2 = 2 * sigmaR * sigmaR;
+    var r=Math.ceil(sigmaS*2), out=new Float32Array(N);
+    var sigS2=2*sigmaS*sigmaS, sigR2=2*sigmaR*sigmaR;
     for(var y=0;y<h;y++) for(var x=0;x<w;x++){
-      var cx = src[y*w+x];
-      var wSum=0, vSum=0;
+      var cx=src[y*w+x], wSum=0, vSum=0;
       for(var dy=-r;dy<=r;dy++) for(var dx=-r;dx<=r;dx++){
         var nx=x+dx,ny=y+dy;
         if(nx<0||nx>=w||ny<0||ny>=h) continue;
-        var nv = src[ny*w+nx];
-        var spatialW = Math.exp(-(dx*dx+dy*dy)/sigS2);
-        var rangeW   = Math.exp(-(cx-nv)*(cx-nv)/sigR2);
-        var w2 = spatialW * rangeW;
-        wSum += w2; vSum += w2 * nv;
+        var nv=src[ny*w+nx];
+        var wt=Math.exp(-(dx*dx+dy*dy)/sigS2)*Math.exp(-(cx-nv)*(cx-nv)/sigR2);
+        wSum+=wt; vSum+=wt*nv;
       }
-      out[y*w+x] = vSum/wSum;
+      out[y*w+x]=vSum/wSum;
     }
     return out;
   }
 
-  // ── 4. XDoG — eXtended Difference of Gaussians ───────────────────────────
-  // The algorithm used by Procreate, Photoshop, and all professional sketch tools.
-  // From Winnemöller et al. (Adobe Research, SIGGRAPH 2011).
-  //
-  // Standard DoG: D(x) = G(x,s1) - k*G(x,s2)
-  // XDoG adds soft thresholding: if D > eps: output = 1 else: output = 1+tanh(phi*D)
-  //
-  // Parameters:
-  //   sigma — base blur (controls line thickness)
-  //   k     — ratio of second sigma (1.6 is classic, higher = thicker lines)
-  //   eps   — threshold (lower = more lines, higher = only bold lines)
-  //   phi   — softness of threshold transition
-  //   tau   — sharpness (0-1, higher = more contrast)
+  // STAGE 4: XDoG — gold-standard sketch/line extraction (SIGGRAPH 2012)
   function xdog(src, sigma, k, eps, phi, tau) {
-    var s1 = gaussBlur(src, sigma);
-    var s2 = gaussBlur(src, sigma * k);
-    var out = new Float32Array(N);
+    var g1=gaussBlur(src,sigma), g2=gaussBlur(src,sigma*k), out=new Float32Array(N);
     for(var i=0;i<N;i++){
-      var dog = s1[i] - tau * s2[i];
-      // Normalise to 0-255 range for consistency
-      dog = dog / 255.0;
-      if (dog >= eps) {
-        out[i] = 255; // white (paper)
-      } else {
-        // Soft threshold using tanh — smooth transition from paper to ink
-        out[i] = 255 * (1.0 + Math.tanh(phi * (dog - eps)));
-      }
+      var d=(g1[i]-tau*g2[i])/255.0;
+      out[i]=(d>=eps)?255.0:255.0*(1.0+Math.tanh(phi*(d-eps)));
     }
     return out;
   }
 
-  // ── 5. CANNY EDGE DETECTION ───────────────────────────────────────────────
-  // Finds edges that XDoG might miss (very fine structural lines).
-  // Classic Canny pipeline: Sobel → NMS → Hysteresis
-  function cannyEdges(src, sigma, hiRatio, loRatio) {
-    var blurred = gaussBlur(src, sigma);
-    // Sobel
+  // STAGE 5: Full Canny with hysteresis
+  function cannyFull(src, sigma, hiRatio, loRatio) {
+    var blurred=gaussBlur(src,sigma);
     var gx=new Float32Array(N),gy=new Float32Array(N),mag=new Float32Array(N);
     for(var y=1;y<h-1;y++) for(var x=1;x<w-1;x++){
       var tl=blurred[(y-1)*w+(x-1)],tc=blurred[(y-1)*w+x],tr=blurred[(y-1)*w+(x+1)];
       var cl=blurred[y*w+(x-1)],cr=blurred[y*w+(x+1)];
       var bl=blurred[(y+1)*w+(x-1)],bc=blurred[(y+1)*w+x],br=blurred[(y+1)*w+(x+1)];
-      var dx=-tl-2*cl-bl+tr+2*cr+br;
-      var dy=-tl-2*tc-tr+bl+2*bc+br;
-      gx[y*w+x]=dx;gy[y*w+x]=dy;mag[y*w+x]=Math.sqrt(dx*dx+dy*dy);
+      gx[y*w+x]=-tl-2*cl-bl+tr+2*cr+br;
+      gy[y*w+x]=-tl-2*tc-tr+bl+2*bc+br;
+      mag[y*w+x]=Math.sqrt(gx[y*w+x]*gx[y*w+x]+gy[y*w+x]*gy[y*w+x]);
     }
-    // Non-maximum suppression — thin to single pixel
     var thin=new Float32Array(N);
     for(var y=1;y<h-1;y++) for(var x=1;x<w-1;x++){
       var v=mag[y*w+x]; if(v<0.5) continue;
       var a=Math.atan2(gy[y*w+x],gx[y*w+x]);
-      var c2=Math.cos(a),s2=Math.sin(a);
-      var x1=Math.round(x+c2),y1=Math.round(y+s2);
-      var x2=Math.round(x-c2),y2=Math.round(y-s2);
+      var x1=Math.round(x+Math.cos(a)),y1=Math.round(y+Math.sin(a));
+      var x2=Math.round(x-Math.cos(a)),y2=Math.round(y-Math.sin(a));
       var n1=(y1>=0&&y1<h&&x1>=0&&x1<w)?mag[y1*w+x1]:0;
       var n2=(y2>=0&&y2<h&&x2>=0&&x2<w)?mag[y2*w+x2]:0;
       if(v>=n1&&v>=n2) thin[y*w+x]=v;
     }
-    // Hysteresis thresholding — keep connected strong edges, drop weak noise
     var mx=0; for(var i=0;i<N;i++) if(thin[i]>mx) mx=thin[i];
     if(mx===0) return new Uint8Array(N);
-    var hi=mx*hiRatio, lo=mx*loRatio;
-    var st=new Uint8Array(N);
+    var hi=mx*hiRatio, lo=mx*loRatio, st=new Uint8Array(N);
     for(var i=0;i<N;i++){if(thin[i]>=hi)st[i]=2;else if(thin[i]>=lo)st[i]=1;}
-    var vis=new Uint8Array(N),stk=[];
+    var vis=new Uint8Array(N), stk=[];
     for(var i=0;i<N;i++) if(st[i]===2) stk.push(i);
     while(stk.length){
       var idx=stk.pop(); if(vis[idx]) continue; vis[idx]=1;
-      var px=idx%w,py=(idx-px)/w;
+      var px=idx%w, py=(idx-px)/w;
       for(var dy=-1;dy<=1;dy++) for(var dx=-1;dx<=1;dx++){
         if(!dx&&!dy) continue;
-        var nx=px+dx,ny=py+dy;
-        if(nx<0||nx>=w||ny<0||ny>=h) continue;
-        var ni=ny*w+nx;
+        var nx2=px+dx,ny2=py+dy;
+        if(nx2<0||nx2>=w||ny2<0||ny2>=h) continue;
+        var ni=ny2*w+nx2;
         if(!vis[ni]&&st[ni]>=1){st[ni]=2;stk.push(ni);}
       }
     }
@@ -1701,142 +1684,118 @@ function processStencilPipeline(imageData, w, h, mode) {
     return out;
   }
 
-  // ── 6. MODE PARAMETERS ────────────────────────────────────────────────────
-  // Each mode tuned to produce a specific professional stencil quality:
-  //
-  // SIMPLE:   Maximum denoise. XDoG with large sigma = thick clean outlines.
-  //           Looks like a hand-drawn bold flash tattoo.
-  //           Perfect for beginners — easy to trace, clear lines only.
-  //
-  // MODERATE: Medium denoise. Balanced XDoG picks up main structure + inner lines.
-  //           How most professional shops produce working stencils.
-  //
-  // EXPERT:   Light denoise. Bilateral preserves texture while XDoG captures
-  //           fine shadow edges. 4 line weights for complete tonal road map.
-  //           How master tattoo artists like Paul Booth work from photos.
-
-  var params = {
-    simple: {
-      bilSigS: 6, bilSigR: 35,       // Heavy bilateral — kills all texture/noise
-      xdogSig: 1.8, xdogK: 4.5,      // Large ratio = thick lines only
-      xdogEps: 0.01, xdogPhi: 12, xdogTau: 0.98,
-      cannySig: 3.0, cannyHi: 0.28, cannyLo: 0.09,
-      cannyWeight: 0.3                // Canny adds minor structural boost
-    },
-    moderate: {
-      bilSigS: 4, bilSigR: 25,
-      xdogSig: 1.2, xdogK: 3.0,
-      xdogEps: 0.015, xdogPhi: 10, xdogTau: 0.97,
-      cannySig: 1.8, cannyHi: 0.20, cannyLo: 0.07,
-      cannyWeight: 0.5
-    },
-    expert: {
-      bilSigS: 2.5, bilSigR: 18,     // Light bilateral — preserves fine texture
-      xdogSig: 0.8, xdogK: 2.2,      // Small sigma = fine detail lines
-      xdogEps: 0.02, xdogPhi: 8, xdogTau: 0.96,
-      cannySig: 1.2, cannyHi: 0.16, cannyLo: 0.05,
-      cannyWeight: 0.7                // Canny heavily contributes in expert mode
-    }
-  }[mode] || params.moderate;
-  // safety fallback
-  if (!params) params = {bilSigS:4,bilSigR:25,xdogSig:1.2,xdogK:3.0,xdogEps:0.015,xdogPhi:10,xdogTau:0.97,cannySig:1.8,cannyHi:0.20,cannyLo:0.07,cannyWeight:0.5};
-
-  // ── 7. RUN THE PIPELINE ───────────────────────────────────────────────────
-
-  // Stage A: Bilateral filter — edge-preserving denoise
-  var bilateral = bilateralFilter(lum, params.bilSigS, params.bilSigR);
-
-  // Stage B: XDoG — the main line extractor
-  // Produces a soft-thresholded sketch-like image
-  var xdogOut = xdog(bilateral, params.xdogSig, params.xdogK,
-                     params.xdogEps, params.xdogPhi, params.xdogTau);
-
-  // Stage C: Convert XDoG output to binary edge map
-  // XDoG gives us values 0-255 where low = ink, high = paper
-  var xdogEdges = new Uint8Array(N);
-  for(var i=0;i<N;i++) xdogEdges[i] = xdogOut[i] < 128 ? 255 : 0;
-
-  // Stage D: Canny edges on bilateral-filtered image
-  var cannyOut = cannyEdges(bilateral, params.cannySig, params.cannyHi, params.cannyLo);
-
-  // Stage E: Merge XDoG + Canny
-  // XDoG gives smooth artistic lines, Canny adds any missed structural edges
-  var merged = new Uint8Array(N);
-  for(var i=0;i<N;i++){
-    var xv = xdogEdges[i] > 0 ? 1 : 0;
-    var cv = cannyOut[i] > 0 ? params.cannyWeight : 0;
-    merged[i] = (xv + cv > 0.4) ? 255 : 0;
+  // STAGE 6: Mode params (research-tuned for tattoo stencils)
+  var p;
+  if(mode==='simple'){
+    p={bilS:7,bilR:40,xSig:2.2,xK:5.5,xEps:0.01,xPhi:14,xTau:0.99,cSig:3.5,cHi:0.30,cLo:0.10,ms:false,tonal:false};
+  } else if(mode==='expert'){
+    p={bilS:2,bilR:15,xSig:0.8,xK:2.1,xEps:0.022,xPhi:8,xTau:0.96,cSig:1.0,cHi:0.14,cLo:0.04,ms:true,tonal:true};
+  } else {
+    p={bilS:4,bilR:25,xSig:1.3,xK:3.2,xEps:0.016,xPhi:10,xTau:0.97,cSig:1.8,cHi:0.20,cLo:0.07,ms:false,tonal:false};
   }
 
-  // Stage F: Expert mode — second fine-detail XDoG pass for tonal boundaries
-  var tonalEdges = new Uint8Array(N);
-  if (mode === 'expert') {
-    // Very light bilateral preserves shadow gradient boundaries
-    var lightBilateral = bilateralFilter(lum, 1.5, 12);
-    // Tight XDoG catches shadow/highlight boundaries
-    var tonalXdog = xdog(lightBilateral, 0.5, 1.8, 0.025, 6, 0.95);
-    var tonalCanny = cannyEdges(lightBilateral, 0.8, 0.12, 0.04);
-    for(var i=0;i<N;i++){
-      if(tonalXdog[i] < 100 || tonalCanny[i] > 0) tonalEdges[i] = 255;
-    }
-    // Remove tonal edges that overlap primary edges (they're already captured)
-    for(var i=0;i<N;i++) if(merged[i]) tonalEdges[i] = 0;
+  var bilateral=bilateralFilter(guided,p.bilS,p.bilR);
+  var xdogP=xdog(bilateral,p.xSig,p.xK,p.xEps,p.xPhi,p.xTau);
+  var primaryEdges=new Uint8Array(N);
+  for(var i=0;i<N;i++) primaryEdges[i]=xdogP[i]<128?255:0;
+
+  // Multi-scale XDoG (expert: 3 passes for line hierarchy)
+  var fineEdges=new Uint8Array(N), medEdges=new Uint8Array(N);
+  if(p.ms){
+    var xdogFine=xdog(bilateral,p.xSig*0.5,p.xK*0.8,p.xEps*1.5,p.xPhi*0.8,p.xTau);
+    for(var i=0;i<N;i++) fineEdges[i]=xdogFine[i]<90?255:0;
+    var xdogMed=xdog(bilateral,p.xSig*1.8,p.xK*1.3,p.xEps*0.6,p.xPhi*1.2,p.xTau);
+    for(var i=0;i<N;i++) medEdges[i]=xdogMed[i]<160?255:0;
+    for(var i=0;i<N;i++) if(primaryEdges[i]) fineEdges[i]=0;
+    for(var i=0;i<N;i++) if(primaryEdges[i]||fineEdges[i]) medEdges[i]=0;
   }
 
-  // Stage G: Gap closing — bridges broken line segments
-  // Critical for thermal transfer paper — broken lines = gaps on skin
-  function closeGaps(edges) {
-    var out = new Uint8Array(N);
+  // Merge canny
+  var cannyEdges=cannyFull(bilateral,p.cSig,p.cHi,p.cLo);
+  for(var i=0;i<N;i++) if(!primaryEdges[i]&&cannyEdges[i]) primaryEdges[i]=180;
+
+  // Tonal boundaries (expert)
+  var tonalEdges=new Uint8Array(N);
+  if(p.tonal){
+    var coarseBil=bilateralFilter(norm,10,50);
+    var tXdog=xdog(coarseBil,3.0,2.0,0.030,6,0.95);
+    var tCanny=cannyFull(coarseBil,4.0,0.32,0.13);
+    for(var i=0;i<N;i++){if(tXdog[i]<130||tCanny[i]>0) tonalEdges[i]=255;}
+    for(var i=0;i<N;i++) if(primaryEdges[i]>0) tonalEdges[i]=0;
+  }
+
+  // STAGE 7: Morphological cleanup (remove noise, close gaps)
+  function morphClean(edges){
+    var out=new Uint8Array(N);
+    for(var y=1;y<h-1;y++) for(var x=1;x<w-1;x++){
+      var idx=y*w+x; if(!edges[idx]) continue;
+      var n=0;
+      if(edges[(y-1)*w+x])n++;if(edges[(y+1)*w+x])n++;
+      if(edges[y*w+(x-1)])n++;if(edges[y*w+(x+1)])n++;
+      if(edges[(y-1)*w+(x-1)])n++;if(edges[(y-1)*w+(x+1)])n++;
+      if(edges[(y+1)*w+(x-1)])n++;if(edges[(y+1)*w+(x+1)])n++;
+      if(n>=2) out[idx]=edges[idx];
+    }
+    return out;
+  }
+  function gapClose(edges){
+    var out=new Uint8Array(N);
     for(var i=0;i<N;i++) out[i]=edges[i];
     for(var y=2;y<h-2;y++) for(var x=2;x<w-2;x++){
       if(out[y*w+x]) continue;
-      var hor  = out[y*w+(x-1)]     && out[y*w+(x+1)];
-      var ver  = out[(y-1)*w+x]     && out[(y+1)*w+x];
-      var d1   = out[(y-1)*w+(x-1)] && out[(y+1)*w+(x+1)];
-      var d2   = out[(y-1)*w+(x+1)] && out[(y+1)*w+(x-1)];
-      if(hor||ver||d1||d2) out[y*w+x]=180;
+      var hor=out[y*w+(x-1)]&&out[y*w+(x+1)];
+      var ver=out[(y-1)*w+x]&&out[(y+1)*w+x];
+      var d1=out[(y-1)*w+(x-1)]&&out[(y+1)*w+(x+1)];
+      var d2=out[(y-1)*w+(x+1)]&&out[(y+1)*w+(x-1)];
+      if(hor||ver||d1||d2) out[y*w+x]=150;
     }
     return out;
   }
 
-  var finalPrimary = closeGaps(merged);
-  var finalTonal   = mode==='expert' ? closeGaps(tonalEdges) : new Uint8Array(N);
+  var cleanP=morphClean(primaryEdges), closedP=gapClose(cleanP);
+  var cleanF=p.ms?morphClean(fineEdges):new Uint8Array(N);
+  var cleanT=p.tonal?morphClean(tonalEdges):new Uint8Array(N);
 
-  // ── 8. RENDER — white paper, variable black ink weights ───────────────────
-  // Line weights modelled on how tattoo artists actually draw:
-  //   Bold (255): primary structural outlines — the skeleton of the design
-  //   Gap-filled (200): bridged breaks in primary lines
-  //   Tonal (100): shadow/light boundary guides — expert mode only
-  //   (tonal lines are lighter so artist knows they indicate shading zones)
+  // STAGE 8: Stroke width normalisation (lines <1.5px dilated for thermal printing)
+  function dilate1px(edges){
+    var out=new Uint8Array(N);
+    for(var i=0;i<N;i++) out[i]=edges[i];
+    for(var y=1;y<h-1;y++) for(var x=1;x<w-1;x++){
+      if(edges[y*w+x]) continue;
+      if(edges[(y-1)*w+x]===255||edges[(y+1)*w+x]===255||
+         edges[y*w+(x-1)]===255||edges[y*w+(x+1)]===255) out[y*w+x]=100;
+    }
+    return out;
+  }
+  var finalP=mode==='expert'?closedP:dilate1px(closedP);
+  var finalF=p.ms?gapClose(cleanF):new Uint8Array(N);
+  var finalT=p.tonal?cleanT:new Uint8Array(N);
 
-  var intensity = STATE.stencilSettings.lineIntensity || 0.85;
-  var opacity   = 0.15 + 0.85 * Math.pow(intensity, 0.5);
-  var out_img   = new ImageData(w, h);
-
+  // STAGE 9: Render — 4-level line weights on pure white
+  var intensity=STATE.stencilSettings?(STATE.stencilSettings.lineIntensity||0.85):0.85;
+  var baseOpacity=0.25+0.75*Math.pow(intensity,0.6);
+  var out_img=new ImageData(w,h);
   for(var i=0;i<N;i++){
-    var weight = 0;
-    if      (finalPrimary[i]===255) weight = 1.0;
-    else if (finalPrimary[i]===180) weight = 0.70;
-    else if (finalTonal[i]  >   0)  weight = 0.30;
-
+    var weight=0;
+    if(finalP[i]===255) weight=1.00;
+    else if(finalF[i]===255) weight=0.72;
+    else if(finalP[i]===180) weight=0.68;
+    else if(finalP[i]===150) weight=0.55;
+    else if(finalP[i]===100) weight=0.40;
+    else if(finalF[i]>0) weight=0.35;
+    else if(finalT[i]>0) weight=0.22;
     if(weight===0){
       out_img.data[i*4]=255;out_img.data[i*4+1]=255;out_img.data[i*4+2]=255;out_img.data[i*4+3]=255;
     } else {
-      var alpha = Math.min(1, weight * opacity * 1.4);
-      // Clamp minimum darkness: primary lines must print clearly on thermal paper
-      var minAlpha = mode==='simple'?0.85:mode==='moderate'?0.78:0.70;
-      if(weight===1.0) alpha=Math.max(alpha, minAlpha);
-      var v = Math.round(255*(1-alpha));
+      var minA=(weight>=0.95)?0.82:(weight>=0.60)?0.62:0.38;
+      if(mode==='simple') minA=Math.max(minA,0.88);
+      var alpha=Math.max(Math.min(1,weight*baseOpacity*1.4),minA);
+      var v=Math.round(255*(1-alpha));
       out_img.data[i*4]=v;out_img.data[i*4+1]=v;out_img.data[i*4+2]=v;out_img.data[i*4+3]=255;
     }
   }
-
-  STATE.stencilEdges = finalPrimary;
-  STATE.stencilFine  = new Uint8Array(N);
-  STATE.stencilTonal = finalTonal;
-  STATE.stencilMode  = mode;
-
-  return { pixels: out_img, edges: finalPrimary };
+  STATE.stencilEdges=finalP; STATE.stencilFine=finalF; STATE.stencilTonal=finalT; STATE.stencilMode=mode;
+  return {pixels:out_img, edges:finalP};
 }
 
 function adjustIntensity(val) {
