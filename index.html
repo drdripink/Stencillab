@@ -146,7 +146,7 @@ body::before{
 }
 .plan-pill.trial{background:rgba(255,255,255,.06);color:#aaa;border:1px solid rgba(255,255,255,.12)}
 .plan-pill.pro{background:rgba(255,255,255,.08);color:#ddd;border:1px solid rgba(255,255,255,.18)}
-.plan-pill.sponsored{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.25)}
+.plan-pill.superuser{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.25)}
 .sign-out-btn{
   width:100%;margin-top:10px;height:38px;
   border-radius:var(--radius);border:1px solid rgba(255,255,255,.12);
@@ -636,6 +636,55 @@ input[type=range]::-webkit-slider-thumb{
   .profile-hero{flex-direction:column;text-align:center}
   .input-row{grid-template-columns:1fr}
 }
+
+/* ── ADMIN DASHBOARD ────────────────────────────── */
+.admin-wrap { padding: 0 0 40px; }
+.admin-header { margin-bottom: 20px; }
+.admin-title { font-family: var(--font-heading); font-size: 22px; letter-spacing: 3px; color: var(--white); margin: 0; }
+.admin-stats-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px; }
+@media(max-width:600px) { .admin-stats-row { grid-template-columns: repeat(2, 1fr); } }
+.admin-stat-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 16px 12px; text-align: center; transition: border-color 0.2s, transform 0.15s; }
+.admin-stat-card:hover { border-color: var(--neon); transform: translateY(-2px); }
+.admin-stat-num { font-family: var(--font-heading); font-size: 26px; font-weight: 700; color: var(--white); }
+.admin-stat-label { font-size: 9px; letter-spacing: 2px; color: var(--grey); margin-top: 4px; text-transform: uppercase; }
+.admin-stat-highlight { border-color: var(--neon); }
+.admin-stat-highlight .admin-stat-num { color: var(--neon); }
+.admin-stat-revenue .admin-stat-num { color: #4ade80; }
+.admin-stat-revenue { border-color: #4ade80; }
+.admin-stat-cancelled .admin-stat-num { color: #f87171; }
+.admin-stat-cancelled { border-color: #f87171; }
+.admin-filter-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.admin-filter-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--grey-light); font-size: 11px; font-weight: 700; letter-spacing: 1px; padding: 8px 14px; border-radius: 6px; cursor: pointer; text-transform: uppercase; transition: all 0.2s; }
+.admin-filter-btn:hover, .admin-filter-btn.active { background: var(--neon); border-color: var(--neon); color: var(--bg); }
+.admin-user-list { display: flex; flex-direction: column; gap: 8px; }
+.admin-user-row { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; transition: border-color 0.2s; }
+.admin-user-row:hover { border-color: var(--border2); }
+.admin-user-main { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+.admin-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.admin-dot-green { background: #4ade80; box-shadow: 0 0 6px #4ade80; }
+.admin-dot-red { background: #f87171; box-shadow: 0 0 6px #f87171; }
+.admin-dot-grey { background: var(--grey); }
+.admin-user-info { min-width: 0; }
+.admin-user-email { font-size: 13px; color: var(--white-dim); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px; }
+.admin-user-meta { display: flex; align-items: center; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+.admin-badge { font-size: 9px; font-weight: 700; letter-spacing: 1px; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; }
+.admin-badge-pro { background: rgba(99,102,241,0.2); color: #818cf8; border: 1px solid rgba(99,102,241,0.3); }
+.admin-badge-studio { background: rgba(234,179,8,0.15); color: #fbbf24; border: 1px solid rgba(234,179,8,0.3); }
+.admin-badge-free { background: var(--surface3); color: var(--grey); border: 1px solid var(--border); }
+.admin-badge-superuser { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+.admin-meta-text { font-size: 10px; color: var(--grey); }
+.admin-meta-green { color: #4ade80; }
+.admin-meta-red { color: #f87171; }
+.admin-user-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.admin-action-btn { background: transparent; border: 1px solid var(--border); color: var(--grey); width: 34px; height: 34px; border-radius: 8px; cursor: pointer; font-size: 15px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.admin-action-delete:hover { border-color: #f87171; color: #f87171; background: rgba(239,68,68,0.1); }
+.admin-empty { color: var(--grey); font-size: 13px; padding: 40px; text-align: center; }
+
+
+.profile-danger-zone { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); }
+.danger-delete-btn { background: transparent; border: 1px solid #f87171; color: #f87171; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 700; letter-spacing: 1px; width: 100%; transition: all 0.2s; }
+.danger-delete-btn:hover { background: rgba(239,68,68,0.1); }
+
 </style>
 </head>
 <body>
@@ -644,6 +693,7 @@ input[type=range]::-webkit-slider-thumb{
 <script>
 
 var STATE = {
+  adminFilter: 'all',
   page: 'auth',
   authMode: 'login',
   authStep: 'credentials',  // credentials | onboard
@@ -680,9 +730,9 @@ var STATE = {
   })(),
   adminStats: { total:247, active:189, trial:43, cancelled:15 },
   users: [
-    { id:'1', email:'jake@gmail.com', name:'Jake Morrison', plan:'pro', active:true, freeAccess:false, discount:0, role:'user', sponsored:false, instagram:'@jakemorrisson_ink', dob:'1990-05-12' },
-    { id:'2', email:'luna@studio.com', name:'Luna Ink', plan:'studio', active:true, freeAccess:true, discount:15, role:'user', sponsored:true, instagram:'@luna.ink.studio', dob:'1995-03-28' },
-    { id:'6', email:'stencillabadmin@gmail.com', name:'Studio Admin', plan:'sponsored', active:true, freeAccess:true, discount:100, role:'super_admin', sponsored:true, instagram:'@stencillab', dob:'' }
+    { id:'1', email:'jake@gmail.com', name:'Jake Morrison', plan:'pro', active:true, freeAccess:false, discount:0, role:'user', superuser:false, instagram:'@jakemorrisson_ink', dob:'1990-05-12' },
+    { id:'2', email:'luna@studio.com', name:'Luna Ink', plan:'studio', active:true, freeAccess:true, discount:15, role:'user', superuser:true, instagram:'@luna.ink.studio', dob:'1995-03-28' },
+    { id:'6', email:'stencillabadmin@gmail.com', name:'Super User', plan:'superuser', active:true, freeAccess:true, discount:100, role:'super_admin', superuser:true, instagram:'@stencillab', dob:'' }
   ]
 };
 
@@ -828,8 +878,8 @@ function renderSidebar() {
       '</div>';
   }
   var initials = ((u.fname||'A').charAt(0)+(u.lname||'').charAt(0)).toUpperCase() || 'A';
-  var planClass = u.sponsored ? 'sponsored' : (u.plan==='pro'||u.plan==='studio' ? 'pro' : 'trial');
-  var planLabel = u.sponsored ? '&#9733; SPONSORED' : (u.plan ? u.plan.toUpperCase().replace('_',' ') : 'FREE TRIAL');
+  var planClass = u.superuser ? 'superuser' : (u.plan==='pro'||u.plan==='studio' ? 'pro' : 'trial');
+  var planLabel = u.superuser ? '&#9733; SPONSORED' : (u.plan ? u.plan.toUpperCase().replace('_',' ') : 'FREE TRIAL');
 
   return '<div class="sidebar">' +
     '<div class="sidebar-header">' +
@@ -935,8 +985,8 @@ function renderHome() {
 function renderProfile() {
   var u = STATE.user || {};
   var initials = ((u.fname||'A').charAt(0)+(u.lname||'').charAt(0)).toUpperCase();
-  var planClass = u.sponsored ? 'sponsored' : (u.plan==='pro'||u.plan==='studio' ? 'pro' : 'trial');
-  var planLabel = u.sponsored ? '&#9733; SPONSORED' : (u.plan ? u.plan.toUpperCase().replace('_',' ') : 'FREE TRIAL');
+  var planClass = u.superuser ? 'superuser' : (u.plan==='pro'||u.plan==='studio' ? 'pro' : 'trial');
+  var planLabel = u.superuser ? '&#9733; SPONSORED' : (u.plan ? u.plan.toUpperCase().replace('_',' ') : 'FREE TRIAL');
   var dobStr = u.dob ? new Date(u.dob).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}) : 'Not set';
 
   var html = '<div class="page-header"><div class="page-title">MY <span>PROFILE</span></div><div class="page-subtitle">Your account details and subscription</div></div>';
@@ -1234,36 +1284,93 @@ function renderSettings(){
 
 // ── ADMIN ───────────────────────────────────────────────────────────────────
 function renderAdmin() {
-  var s = STATE.adminStats;
-  var filtered = STATE.users.filter(function(u){
-    return !STATE.searchQuery || u.email.toLowerCase().indexOf(STATE.searchQuery.toLowerCase())>=0 || (u.name||'').toLowerCase().indexOf(STATE.searchQuery.toLowerCase())>=0;
+  var users = STATE.users || [];
+  var planPrices = { free: 0, pro: 9.99, studio: 29.99 };
+  var activeUsers = users.filter(function(u) { return u.subscribed && !u.cancelled; });
+  var cancelledUsers = users.filter(function(u) { return u.cancelled; });
+  var freeUsers = users.filter(function(u) { return !u.subscribed && !u.cancelled; });
+  var monthlyRevenue = activeUsers.reduce(function(sum, u) {
+    return sum + (planPrices[u.plan] || 0);
+  }, 0);
+
+  // Sort by usage for most active
+  var sortedByUsage = users.slice().sort(function(a, b) {
+    var aUse = (a.stencils_used || 0) + (a.enhancements_used || 0) + (a.generations_used || 0);
+    var bUse = (b.stencils_used || 0) + (b.enhancements_used || 0) + (b.generations_used || 0);
+    return bUse - aUse;
   });
-  var html = '<div class="page-header"><div class="page-title">ADMIN <span>DASHBOARD</span></div><div class="page-subtitle">stencillabadmin@gmail.com</div></div>';
-  html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">';
-  [['TOTAL',s.total,'var(--text)'],['ACTIVE',s.active,'var(--success)'],['TRIAL',s.trial,'var(--warning)'],['CANCELLED',s.cancelled,'var(--error)']].forEach(function(x){
-    html += '<div class="card"><div class="label">' + x[0] + '</div><div style="font-family:Bebas Neue,sans-serif;font-size:38px;color:' + x[2] + ';line-height:1;margin-top:4px">' + x[1] + '</div></div>';
-  });
-  html += '</div>';
-  html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">';
-  html += '<div style="font-family:Bebas Neue,sans-serif;font-size:18px;letter-spacing:3px">USERS</div>';
-  html += '<input id="admin-search" class="input" placeholder="Search..." value="' + (STATE.searchQuery||'') + '" style="width:220px;height:38px;padding:0 12px;font-size:13px"/>';
-  html += '</div>';
-  html += '<div class="card" style="padding:0;overflow:hidden"><table class="admin-table"><thead><tr>';
-  ['USER','PLAN','STATUS','ACTIONS'].forEach(function(h){ html += '<th>' + h + '</th>'; });
-  html += '</tr></thead><tbody>';
-  filtered.forEach(function(u){
-    html += '<tr>';
-    html += '<td><div style="font-weight:600">' + u.name + '</div><div style="font-size:11px;color:var(--text3)">' + u.email + '</div>' + (u.instagram?'<div style="font-size:11px;color:var(--text3)">@'+u.instagram.replace('@','')+'</div>':'') + (u.role==='super_admin'?'<span style="font-size:9px;color:#a78bfa;font-family:Bebas Neue,sans-serif">ADMIN</span>':'') + '</td>';
-    html += '<td><span style="font-family:Bebas Neue,sans-serif;font-size:10px;padding:3px 8px;border-radius:4px;background:rgba(230,57,70,.1);color:var(--accent)">' + (u.plan||'trial').toUpperCase().replace('_',' ') + '</span>' + (u.sponsored?'<br><span style="font-size:9px;color:var(--success);font-family:Bebas Neue,sans-serif">&#9733; SPONSORED</span>':'') + '</td>';
-    html += '<td><div style="display:flex;align-items:center;gap:5px"><div style="width:7px;height:7px;border-radius:50%;background:' + (u.active?'var(--success)':'var(--error)') + '"></div><span style="font-size:12px;color:' + (u.active?'var(--success)':'var(--error)') + '">' + (u.active?'Active':'Banned') + '</span></div></td>';
-    html += '<td><div style="display:flex;flex-direction:column;gap:3px">';
-    html += '<button class="admin-action-btn" data-action="free" data-uid="' + u.id + '" style="border-color:rgba(34,197,94,.3);color:var(--success)">' + (u.freeAccess?'REVOKE FREE':'FREE ACCESS') + '</button>';
-    html += '<button class="admin-action-btn" data-action="discount" data-uid="' + u.id + '" style="border-color:rgba(245,158,11,.3);color:var(--warning)">' + (u.discount>0?'REMOVE 15%':'15% SPONSOR') + '</button>';
-    html += '<button class="admin-action-btn" data-action="ban" data-uid="' + u.id + '" style="border-color:' + (u.active?'rgba(239,68,68,.3)':'rgba(34,197,94,.3)') + ';color:' + (u.active?'var(--error)':'var(--success)') + '">' + (u.active?'BAN':'RESTORE') + '</button>';
-    html += '</div></td></tr>';
-  });
-  html += '</tbody></table></div>';
-  return html;
+
+  var filter = STATE.adminFilter || 'all';
+  var displayUsers = filter === 'subscribed' ? activeUsers
+    : filter === 'cancelled' ? cancelledUsers
+    : filter === 'active' ? sortedByUsage.slice(0, 20)
+    : users;
+
+  return '<div class="admin-wrap">' +
+    '<div class="admin-header">' +
+      '<h2 class="admin-title">ADMIN DASHBOARD</h2>' +
+    '</div>' +
+
+    // ── STATS ROW ──
+    '<div class="admin-stats-row">' +
+      '<div class="admin-stat-card" onclick="STATE.adminFilter='all';render()" style="cursor:pointer">' +
+        '<div class="admin-stat-num">' + users.length + '</div>' +
+        '<div class="admin-stat-label">TOTAL USERS</div>' +
+      '</div>' +
+      '<div class="admin-stat-card admin-stat-highlight" onclick="STATE.adminFilter='subscribed';render()" style="cursor:pointer">' +
+        '<div class="admin-stat-num">' + activeUsers.length + '</div>' +
+        '<div class="admin-stat-label">SUBSCRIBED</div>' +
+      '</div>' +
+      '<div class="admin-stat-card admin-stat-revenue" onclick="STATE.adminFilter='subscribed';render()" style="cursor:pointer">' +
+        '<div class="admin-stat-num">&pound;' + monthlyRevenue.toFixed(2) + '</div>' +
+        '<div class="admin-stat-label">MONTHLY REVENUE</div>' +
+      '</div>' +
+      '<div class="admin-stat-card admin-stat-cancelled" onclick="STATE.adminFilter='cancelled';render()" style="cursor:pointer">' +
+        '<div class="admin-stat-num">' + cancelledUsers.length + '</div>' +
+        '<div class="admin-stat-label">CANCELLED</div>' +
+      '</div>' +
+      '<div class="admin-stat-card" onclick="STATE.adminFilter='active';render()" style="cursor:pointer">' +
+        '<div class="admin-stat-num">' + freeUsers.length + '</div>' +
+        '<div class="admin-stat-label">FREE USERS</div>' +
+      '</div>' +
+    '</div>' +
+
+    // ── FILTER BAR ──
+    '<div class="admin-filter-bar">' +
+      '<button class="admin-filter-btn' + (filter==='all' ? ' active' : '') + '" onclick="STATE.adminFilter='all';render()">All Users</button>' +
+      '<button class="admin-filter-btn' + (filter==='subscribed' ? ' active' : '') + '" onclick="STATE.adminFilter='subscribed';render()">Subscribed</button>' +
+      '<button class="admin-filter-btn' + (filter==='cancelled' ? ' active' : '') + '" onclick="STATE.adminFilter='cancelled';render()">Cancelled</button>' +
+      '<button class="admin-filter-btn' + (filter==='active' ? ' active' : '') + '" onclick="STATE.adminFilter='active';render()">Most Active</button>' +
+    '</div>' +
+
+    // ── USER TABLE ──
+    '<div class="admin-user-list">' +
+    (displayUsers.length === 0 ? '<div class="admin-empty">No users in this category</div>' :
+      displayUsers.map(function(u) {
+        var usage = (u.stencils_used || 0) + (u.enhancements_used || 0) + (u.generations_used || 0);
+        var planBadge = u.plan === 'pro' ? 'admin-badge-pro' : u.plan === 'studio' ? 'admin-badge-studio' : 'admin-badge-free';
+        var statusDot = u.cancelled ? 'admin-dot-red' : u.subscribed ? 'admin-dot-green' : 'admin-dot-grey';
+        return '<div class="admin-user-row">' +
+          '<div class="admin-user-main">' +
+            '<span class="admin-dot ' + statusDot + '"></span>' +
+            '<div class="admin-user-info">' +
+              '<div class="admin-user-email">' + (u.email || 'Unknown') + '</div>' +
+              '<div class="admin-user-meta">' +
+                '<span class="admin-badge ' + planBadge + '">' + (u.plan || 'free').toUpperCase() + '</span>' +
+                (u.role === 'admin' ? '<span class="admin-badge admin-badge-superuser">SUPER USER</span>' : '') +
+                '<span class="admin-meta-text">Uses: ' + usage + '</span>' +
+                (u.cancelled ? '<span class="admin-meta-text admin-meta-red">Cancelled</span>' : '') +
+                (u.subscribed && !u.cancelled ? '<span class="admin-meta-text admin-meta-green">&pound;' + (planPrices[u.plan] || 0).toFixed(2) + '/mo</span>' : '') +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="admin-user-actions">' +
+            '<button class="admin-action-btn admin-action-delete" onclick="adminDeleteUser('' + (u.id || u.email) + '')" title="Delete Account">&#128465;</button>' +
+          '</div>' +
+        '</div>';
+      }).join('')) +
+    '</div>' +
+  '</div>';
 }
 
 function renderPaywall() {
@@ -1282,11 +1389,11 @@ function handleAuth() {
   STATE.user = {
     fname: isAdmin ? 'Studio' : (fname || email.split('@')[0]),
     lname: isAdmin ? 'Admin' : lname,
-    name:  isAdmin ? 'Studio Admin' : ((fname+' '+lname).trim() || email.split('@')[0]),
+    name:  isAdmin ? 'Super User' : ((fname+' '+lname).trim() || email.split('@')[0]),
     email: email,
     role:  isAdmin ? 'super_admin' : 'user',
-    plan:  isAdmin ? 'sponsored' : 'free_trial',
-    sponsored: isAdmin,
+    plan:  isAdmin ? 'superuser' : 'free_trial',
+    superuser: isAdmin,
     instagram: isAdmin ? '@stencillab' : '',
     dob: '', studio: '', phone: ''
   };
@@ -2138,12 +2245,12 @@ function toggleBan(id) {
 
 function grantFree(id) {
   var u = STATE.users.find(function(x){return x.id===id;});
-  if (u) { u.freeAccess = !u.freeAccess; u.sponsored = u.freeAccess || u.discount > 0; if(u.freeAccess) u.plan='sponsored'; render(); showToast(u.freeAccess ? 'Free access granted' : 'Free access revoked', 'success'); }
+  if (u) { u.freeAccess = !u.freeAccess; u.superuser = u.freeAccess || u.discount > 0; if(u.freeAccess) u.plan='superuser'; render(); showToast(u.freeAccess ? 'Free access granted' : 'Free access revoked', 'success'); }
 }
 
 function applyDiscount(id) {
   var u = STATE.users.find(function(x){return x.id===id;});
-  if (u) { u.discount = u.discount > 0 ? 0 : 15; u.sponsored = u.discount > 0 || u.freeAccess; render(); showToast(u.discount > 0 ? '15% discount applied' : 'Discount removed', 'success'); }
+  if (u) { u.discount = u.discount > 0 ? 0 : 15; u.superuser = u.discount > 0 || u.freeAccess; render(); showToast(u.discount > 0 ? '15% discount applied' : 'Discount removed', 'success'); }
 }
 
 function showToast(msg, type) {
@@ -2186,6 +2293,36 @@ function doLogout() {
 }
 
 // ── ATTACH EVENTS ────────────────────────────────────────────────────────────
+
+// ── Admin delete user ──────────────────────────
+async function adminDeleteUser(userId) {
+  if (!confirm('Delete this user account permanently? This cannot be undone.')) return;
+  try {
+    var users = STATE.users || [];
+    var target = users.find(function(u) { return (u.id || u.email) === userId; });
+    if (!target) { showToast('User not found', 'error'); return; }
+    // Remove from local state immediately
+    STATE.users = users.filter(function(u) { return (u.id || u.email) !== userId; });
+    render();
+    showToast('Account deleted', 'success');
+  } catch(err) {
+    showToast('Error: ' + err.message, 'error');
+  }
+}
+
+// ── Customer self-delete ───────────────────────
+async function deleteMyAccount() {
+  if (!confirm('Permanently delete your account? All your data will be lost. This cannot be undone.')) return;
+  try {
+    STATE.user = null;
+    STATE.page = 'auth';
+    render();
+    showToast('Account deleted successfully', 'success');
+  } catch(err) {
+    showToast('Error: ' + err.message, 'error');
+  }
+}
+
 function attachEvents() {
   // Nav
   document.querySelectorAll('[data-nav]').forEach(function(el){
