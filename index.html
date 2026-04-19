@@ -146,7 +146,7 @@ body::before{
 }
 .plan-pill.trial{background:rgba(255,255,255,.06);color:#aaa;border:1px solid rgba(255,255,255,.12)}
 .plan-pill.pro{background:rgba(255,255,255,.08);color:#ddd;border:1px solid rgba(255,255,255,.18)}
-.plan-pill.superuser{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.25)}
+.plan-pill.sponsored{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.25)}
 .sign-out-btn{
   width:100%;margin-top:10px;height:38px;
   border-radius:var(--radius);border:1px solid rgba(255,255,255,.12);
@@ -862,8 +862,8 @@ function renderSidebar() {
       '</div>';
   }
   var initials = ((u.fname||'A').charAt(0)+(u.lname||'').charAt(0)).toUpperCase() || 'A';
-  var planClass = u.superuser ? 'sponsored' : (u.plan==='pro'||u.plan==='studio' ? 'pro' : 'trial');
-  var planLabel = u.superuser ? '&#9733; SPONSORED' : (u.plan ? u.plan.toUpperCase().replace('_',' ') : 'FREE TRIAL');
+  var planClass = u.sponsored ? 'sponsored' : (u.plan==='pro'||u.plan==='studio' ? 'pro' : 'trial');
+  var planLabel = u.sponsored ? '&#9733; SPONSORED' : (u.plan ? u.plan.toUpperCase().replace('_',' ') : 'FREE TRIAL');
 
   return '<div class="sidebar">' +
     '<div class="sidebar-header">' +
@@ -969,8 +969,8 @@ function renderHome() {
 function renderProfile() {
   var u = STATE.user || {};
   var initials = ((u.fname||'A').charAt(0)+(u.lname||'').charAt(0)).toUpperCase();
-  var planClass = u.superuser ? 'sponsored' : (u.plan==='pro'||u.plan==='studio' ? 'pro' : 'trial');
-  var planLabel = u.superuser ? '&#9733; SPONSORED' : (u.plan ? u.plan.toUpperCase().replace('_',' ') : 'FREE TRIAL');
+  var planClass = u.sponsored ? 'sponsored' : (u.plan==='pro'||u.plan==='studio' ? 'pro' : 'trial');
+  var planLabel = u.sponsored ? '&#9733; SPONSORED' : (u.plan ? u.plan.toUpperCase().replace('_',' ') : 'FREE TRIAL');
   var dobStr = u.dob ? new Date(u.dob).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}) : 'Not set';
 
   var html = '<div class="page-header"><div class="page-title">MY <span>PROFILE</span></div><div class="page-subtitle">Your account details and subscription</div></div>';
@@ -1039,7 +1039,7 @@ function renderStencil() {
     {id:'expert',   label:'EXPERT',   tag:'FULL DETAIL',   desc:'All detail, blend zones, complete tonal map',  cls:'active-expert',   color:'var(--accent)'}
   ];
   var html = '<div class="page-header"><div class="page-title">STENCIL <span>GENERATOR</span></div>';
-  html += '<div class="page-subtitle">Professional AI-powered tattoo stencils &bull; ' + (STATE.replicateKey && STATE.replicateKey.length>10 && !STATE.replicateKey.includes('PASTE') ? '<span style="color:#aaa">&#9679; ControlNet AI active</span>' : '<span style="color:#555">&#9679; ' + (STATE.apiKey && STATE.apiKey.trim() && STATE.apiKey !== 'PASTE_YOUR_ANTHROPIC_API_KEY_HERE' ? 'Claude AI active' : 'Canvas mode (add API key)') + '</span>') + '</div></div>';
+  html += '<div class="page-subtitle">Professional AI-powered tattoo stencils &bull; ' + (STATE.replicateKey && STATE.replicateKey.length>10 && !STATE.replicateKey.includes('PASTE') ? '<span style="color:#aaa">&#9679; ControlNet AI active</span>' : '<span style="color:#555">&#9679; Canvas mode (add Replicate key for AI)</span>') + '</div></div>';
   html += '<div class="grid-2">';
 
   // Left
@@ -1275,43 +1275,37 @@ function renderAdmin() {
   var freeUsers = users.filter(function(u){ return !u.subscribed && !u.cancelled; });
   var revenue = active.reduce(function(s,u){ return s + (pp[u.plan]||0); }, 0);
   var byUsage = users.slice().sort(function(a,b){
-    return ((b.stencils_used||0)+(b.enhancements_used||0)+(b.generations_used||0)) -
-           ((a.stencils_used||0)+(a.enhancements_used||0)+(a.generations_used||0));
+    return ((b.stencils_used||0)+(b.enhancements_used||0)+(b.generations_used||0))-((a.stencils_used||0)+(a.enhancements_used||0)+(a.generations_used||0));
   });
   var f = STATE.adminFilter || 'all';
-  var list = f==='subscribed' ? active : f==='cancelled' ? cancelled : f==='active' ? byUsage.slice(0,20) : users;
-  var statCards =
-    '<div class="asc" onclick="STATE.adminFilter=\'all\';render()" ><div class="asn">' + users.length + '</div><div class="asl">TOTAL USERS</div></div>' +
-    '<div class="asc asc-s" onclick="STATE.adminFilter=\'subscribed\';render()"><div class="asn">' + active.length + '</div><div class="asl">SUBSCRIBED</div></div>' +
-    '<div class="asc asc-r" onclick="STATE.adminFilter=\'subscribed\';render()"><div class="asn">&#163;' + revenue.toFixed(2) + '</div><div class="asl">MONTHLY REVENUE</div></div>' +
-    '<div class="asc asc-c" onclick="STATE.adminFilter=\'cancelled\';render()"><div class="asn">' + cancelled.length + '</div><div class="asl">CANCELLED</div></div>' +
-    '<div class="asc" onclick="STATE.adminFilter=\'active\';render()" ><div class="asn">' + freeUsers.length + '</div><div class="asl">FREE USERS</div></div>';
-  var filterBar =
-    '<button class="afb' + (f==='all'?' afb-on':'') + '" onclick="STATE.adminFilter=\'all\';render()">All</button>' +
-    '<button class="afb' + (f==='subscribed'?' afb-on':'') + '" onclick="STATE.adminFilter=\'subscribed\';render()">Subscribed</button>' +
-    '<button class="afb' + (f==='cancelled'?' afb-on':'') + '" onclick="STATE.adminFilter=\'cancelled\';render()">Cancelled</button>' +
-    '<button class="afb' + (f==='active'?' afb-on':'') + '" onclick="STATE.adminFilter=\'active\';render()">Most Active</button>';
-  var rows = list.length === 0 ? '<div class="a-empty">No users in this category</div>' :
-    list.map(function(u){
-      var usage = (u.stencils_used||0)+(u.enhancements_used||0)+(u.generations_used||0);
-      var pb = u.plan==='pro'?'ab-pro':u.plan==='studio'?'ab-stu':'ab-free';
-      var dot = u.cancelled?'dot-red':u.subscribed?'dot-grn':'dot-gry';
-      return '<div class="a-row">' +
-        '<div class="a-left"><span class="a-dot '+dot+'"></span>' +
-        '<div class="a-info"><div class="a-email">'+(u.email||'Unknown')+'</div>' +
-        '<div class="a-meta">' +
-          '<span class="ab '+pb+'">'+(u.plan||'free').toUpperCase()+'</span>' +
-          (u.role==='admin'?'<span class="ab ab-su">SUPER USER</span>':'') +
-          '<span class="a-txt">Uses: '+usage+'</span>' +
-          (u.cancelled?'<span class="a-txt a-red">Cancelled</span>':'') +
-          (u.subscribed&&!u.cancelled?'<span class="a-txt a-grn">&#163;'+(pp[u.plan]||0).toFixed(2)+'/mo</span>':'') +
-        '</div></div></div>' +
-        '<button class="a-del" onclick="adminDeleteUser(\''+(u.id||u.email)+'\')">&#128465;</button>' +
-      '</div>';
-    }).join('');
-  return '<div class="aw"><h2 class="at">ADMIN DASHBOARD</h2>' +
-    '<div class="a-stats">'+statCards+'</div>' +
-    '<div class="a-filters">'+filterBar+'</div>' +
+  var list = f==='subscribed'?active:f==='cancelled'?cancelled:f==='active'?byUsage.slice(0,20):users;
+  var sc =
+    '<div class="asc" onclick="STATE.adminFilter=\'all\';render()"><div class="asn">'+users.length+'</div><div class="asl">TOTAL USERS</div></div>'+
+    '<div class="asc asc-s" onclick="STATE.adminFilter=\'subscribed\';render()"><div class="asn">'+active.length+'</div><div class="asl">SUBSCRIBED</div></div>'+
+    '<div class="asc asc-r" onclick="STATE.adminFilter=\'subscribed\';render()"><div class="asn">&#163;'+revenue.toFixed(2)+'</div><div class="asl">MONTHLY REVENUE</div></div>'+
+    '<div class="asc asc-c" onclick="STATE.adminFilter=\'cancelled\';render()"><div class="asn">'+cancelled.length+'</div><div class="asl">CANCELLED</div></div>'+
+    '<div class="asc" onclick="STATE.adminFilter=\'active\';render()"><div class="asn">'+freeUsers.length+'</div><div class="asl">FREE USERS</div></div>';
+  var fb =
+    '<button class="afb'+(f==='all'?' afb-on':'')+'" onclick="STATE.adminFilter=\'all\';render()">All</button>'+
+    '<button class="afb'+(f==='subscribed'?' afb-on':'')+'" onclick="STATE.adminFilter=\'subscribed\';render()">Subscribed</button>'+
+    '<button class="afb'+(f==='cancelled'?' afb-on':'')+'" onclick="STATE.adminFilter=\'cancelled\';render()">Cancelled</button>'+
+    '<button class="afb'+(f==='active'?' afb-on':'')+'" onclick="STATE.adminFilter=\'active\';render()">Most Active</button>';
+  var rows = list.length===0?'<div class="a-empty">No users here</div>':list.map(function(u){
+    var use=(u.stencils_used||0)+(u.enhancements_used||0)+(u.generations_used||0);
+    var pb=u.plan==='pro'?'ab-pro':u.plan==='studio'?'ab-stu':'ab-free';
+    var dot=u.cancelled?'dot-red':u.subscribed?'dot-grn':'dot-gry';
+    return '<div class="a-row"><div class="a-left"><span class="a-dot '+dot+'"></span><div class="a-info">'+
+      '<div class="a-email">'+(u.email||'Unknown')+'</div>'+
+      '<div class="a-meta"><span class="ab '+pb+'">'+(u.plan||'free').toUpperCase()+'</span>'+
+      (u.role==='admin'?'<span class="ab ab-su">SUPER USER</span>':'')+
+      '<span class="a-txt">Uses:'+use+'</span>'+
+      (u.cancelled?'<span class="a-txt a-red">Cancelled</span>':'')+
+      (u.subscribed&&!u.cancelled?'<span class="a-txt a-grn">&#163;'+(pp[u.plan]||0).toFixed(2)+'/mo</span>':'')+
+      '</div></div></div>'+
+      '<button class="a-del" onclick="adminDeleteUser(\''+(u.id||u.email)+'\')">&#128465;</button></div>';
+  }).join('');
+  return '<div class="aw"><h2 class="at">ADMIN DASHBOARD</h2>'+
+    '<div class="a-stats">'+sc+'</div><div class="a-filters">'+fb+'</div>'+
     '<div class="a-list">'+rows+'</div></div>';
 }
 
@@ -1539,36 +1533,31 @@ async function generateStencil() {
     var mode = STATE.stencilSettings && STATE.stencilSettings.level ? STATE.stencilSettings.level : 'SIMPLE';
     var hasRep = STATE.replicateKey && STATE.replicateKey.trim() !== '' && STATE.replicateKey !== 'PASTE_YOUR_REPLICATE_KEY_HERE';
     var hasApi = STATE.apiKey && STATE.apiKey.trim() !== '' && STATE.apiKey !== 'PASTE_YOUR_ANTHROPIC_API_KEY_HERE';
-
     if (hasRep) {
-      var replicateModel = 'jagilley/controlnet-scribble:435061a1b5a4c1e26740464bf786efdfa9cb3a3ac488595a2de23e143fdb0117';
-      var repResult = await callReplicate(replicateModel, { image: STATE.stencilInput });
+      var repResult = await callReplicate('jagilley/controlnet-scribble:435061a1b5a4c1e26740464bf786efdfa9cb3a3ac488595a2de23e143fdb0117', { image: STATE.stencilInput });
       STATE.stencilOutput = repResult;
-
     } else if (hasApi) {
-      var promptMap = {
-        'SIMPLE': 'Convert this photo into a SIMPLE tattoo stencil with bold clean outlines only. Black lines on pure white background. Bold outlines only, easiest to trace. No shading, no grey tones, no fill — pure black crisp lines on white.',
-        'MODERATE': 'Convert this photo into a MODERATE tattoo stencil. Black lines on pure white background. Include main outlines plus key shadow boundary lines. Balanced detail — outlines and shadow edges visible, no solid fills.',
-        'EXPERT': 'Convert this photo into an EXPERT-level tattoo stencil with full detail. Black lines on pure white background. Include all fine lines, blend zones, and complete tonal map rendered as linework only. Maximum professional detail.'
+      var prompts = {
+        SIMPLE: 'Convert this photo into a SIMPLE tattoo stencil. Bold clean black outlines on pure white background only. No shading, no grey, no fill. Pure crisp black lines.',
+        MODERATE: 'Convert this photo into a MODERATE tattoo stencil. Black outlines plus key shadow boundary lines on white background. No solid fills.',
+        EXPERT: 'Convert this photo into an EXPERT tattoo stencil. All fine lines, blend zones and tonal detail as linework only, on white background.'
       };
-      var stencilPrompt = promptMap[mode] || promptMap['SIMPLE'];
-      var imgBase64 = await imageToBase64(STATE.stencilInput);
-      var claudeMessages = [{
-        role: 'user',
-        content: [
-          { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: imgBase64 } },
-          { type: 'text', text: stencilPrompt + ' Respond ONLY with a complete SVG element (no markdown, no explanation, no code fences). Use viewBox="0 0 512 512", include a white background rect, use ONLY black (#000000) strokes with stroke-width 1.5 and no fills except the white background rect. Make it professional tattoo-ready linework.' }
-        ]
-      }];
-      var claudeResp = await callClaude(claudeMessages, 4000);
-      var svgMatch = claudeResp.match(/<svg[sS]*?</svg>/i);
-      if (svgMatch) {
-        var svgBlob = new Blob([svgMatch[0]], { type: 'image/svg+xml' });
-        STATE.stencilOutput = URL.createObjectURL(svgBlob);
+      var prompt = prompts[mode] || prompts.SIMPLE;
+      var imgB64 = await imageToBase64(STATE.stencilInput);
+      var msgs = [{ role: 'user', content: [
+        { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: imgB64 } },
+        { type: 'text', text: prompt + ' Reply with ONLY a complete SVG element, no markdown, no explanation. Use viewBox="0 0 512 512", white background rect, black strokes only.' }
+      ]}];
+      var resp = await callClaude(msgs, 4000);
+      var svgStart = resp.indexOf('<svg');
+      var svgEnd = resp.lastIndexOf('</svg>');
+      if (svgStart >= 0 && svgEnd > svgStart) {
+        var svgText = resp.slice(svgStart, svgEnd + 6);
+        var blob = new Blob([svgText], { type: 'image/svg+xml' });
+        STATE.stencilOutput = URL.createObjectURL(blob);
       } else {
-        throw new Error('Could not generate stencil — try again');
+        throw new Error('No SVG in response — try again');
       }
-
     } else {
       var img = new Image();
       img.crossOrigin = 'anonymous';
@@ -1580,11 +1569,10 @@ async function generateStencil() {
       ctx.drawImage(img, 0, 0);
       var id = ctx.getImageData(0, 0, canvas.width, canvas.height);
       var d = id.data;
-      for (var px = 0; px < d.length; px += 4) { var v = d[px] < 128 ? 0 : 255; d[px] = v; d[px+1] = v; d[px+2] = v; }
+      for (var px = 0; px < d.length; px += 4) { var v = d[px] < 128 ? 0 : 255; d[px]=v; d[px+1]=v; d[px+2]=v; }
       ctx.putImageData(id, 0, 0);
       STATE.stencilOutput = canvas.toDataURL('image/png');
     }
-
     STATE.stencilLoading = false;
     STATE.baPosition = 50;
     render();
@@ -2187,12 +2175,12 @@ function toggleBan(id) {
 
 function grantFree(id) {
   var u = STATE.users.find(function(x){return x.id===id;});
-  if (u) { u.freeAccess = !u.freeAccess; u.superuser = u.freeAccess || u.discount > 0; if(u.freeAccess) u.plan='sponsored'; render(); showToast(u.freeAccess ? 'Free access granted' : 'Free access revoked', 'success'); }
+  if (u) { u.freeAccess = !u.freeAccess; u.sponsored = u.freeAccess || u.discount > 0; if(u.freeAccess) u.plan='sponsored'; render(); showToast(u.freeAccess ? 'Free access granted' : 'Free access revoked', 'success'); }
 }
 
 function applyDiscount(id) {
   var u = STATE.users.find(function(x){return x.id===id;});
-  if (u) { u.discount = u.discount > 0 ? 0 : 15; u.superuser = u.discount > 0 || u.freeAccess; render(); showToast(u.discount > 0 ? '15% discount applied' : 'Discount removed', 'success'); }
+  if (u) { u.discount = u.discount > 0 ? 0 : 15; u.sponsored = u.discount > 0 || u.freeAccess; render(); showToast(u.discount > 0 ? '15% discount applied' : 'Discount removed', 'success'); }
 }
 
 function showToast(msg, type) {
@@ -2239,8 +2227,7 @@ function doLogout() {
 function adminDeleteUser(uid) {
   if (!confirm('Delete this account permanently?')) return;
   STATE.users = (STATE.users||[]).filter(function(u){ return (u.id||u.email) !== uid; });
-  render();
-  showToast('Account deleted', 'success');
+  render(); showToast('Account deleted', 'success');
 }
 function deleteMyAccount() {
   if (!confirm('Delete your account permanently? All data will be lost.')) return;
