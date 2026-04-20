@@ -722,6 +722,16 @@ var STATE = {
 
 // ── RENDER ─────────────────────────────────────────────────────────────────
 function render() {
+  // Persist API keys to localStorage so they survive across sessions on all devices
+  try {
+    if (STATE.apiKey && STATE.apiKey.length > 10 && STATE.apiKey !== 'PASTE_YOUR_ANTHROPIC_API_KEY_HERE') {
+      localStorage.setItem('sl_api_key', STATE.apiKey);
+    }
+    if (STATE.replicateKey && STATE.replicateKey.length >= 10 && STATE.replicateKey !== 'PASTE_YOUR_REPLICATE_KEY_HERE') {
+      localStorage.setItem('sl_rep_key', STATE.replicateKey);
+    }
+  } catch(e) {}
+
   var root = document.getElementById('root');
   if (!root) return;
 
