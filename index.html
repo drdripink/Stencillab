@@ -1531,19 +1531,30 @@ async function generateStencil() {
   render();
   try {
     var mode = STATE.stencilSettings && STATE.stencilSettings.level ? STATE.stencilSettings.level : 'SIMPLE';
-    var hasRep = STATE.replicateKey && STATE.replicateKey.trim() !== '' && STATE.replicateKey !== 'PASTE_YOUR_REPLICATE_KEY_HERE';
-    var hasApi = STATE.apiKey && STATE.apiKey.trim() !== '' && STATE.apiKey !== 'PASTE_YOUR_ANTHROPIC_API_KEY_HERE';
+    var repKey = STATE.replicateKey;
+    var hasRep = repKey && repKey.trim().length >= 10 && repKey !== 'PASTE_YOUR_REPLICATE_KEY_HERE';
+    var apiKey = STATE.apiKey;
+    var hasApi = apiKey && apiKey.trim().length > 10 && apiKey !== 'PASTE_YOUR_ANTHROPIC_API_KEY_HERE';
+
+    var result = null;
 
     if (hasRep) {
-      var repResult = await callReplicate(
-        'jagilley/controlnet-scribble:435061a1b5a4c1e26740464bf786efdfa9cb3a3ac488595a2de23e143fdb0117',
-        { image: STATE.stencilInput, prompt: 'professional tattoo stencil, bold black outlines, white background, clean linework', num_samples: '1', image_resolution: '512', detect_resolution: 512, ddim_steps: 20, scale: 9, eta: 0 }
-      );
-      STATE.stencilOutput = repResult;
+      try {
+        var raw = await callReplicate(
+          'jagilley/controlnet-scribble:435061a1b5a4c1e26740464bf786efdfa9cb3a3ac488595a2de23e143fdb0117',
+          { image: STATE.stencilInput, prompt: 'professional tattoo stencil, bold black outlines, white background, clean linework', num_samples: '1', image_resolution: '512', detect_resolution: 512, ddim_steps: 20, scale: 9, eta: 0 }
+        );
+        // Replicate returns an array of output URLs — take the first one
+        result = Array.isArray(raw) ? raw[0] : raw;
+      } catch(repErr) {
+        // Replicate failed — fall through to Claude
+        hasRep = false;
+      }
+    }
 
-    } else if (hasApi) {
+    if (!result && hasApi) {
       var prompts = {
-        SIMPLE: 'Convert this photo into a SIMPLE tattoo stencil. Bold clean black outlines on pure white background only. No shading, no grey, no fill.',
+        SIMPLE: 'Convert this photo into a SIMPLE tattoo stencil. Bold clean black outlines on pure white background only. No shading, no grey, no fill. Pure crisp black lines on white.',
         MODERATE: 'Convert this photo into a MODERATE tattoo stencil. Black outlines plus key shadow boundary lines on white background. No solid fills.',
         EXPERT: 'Convert this photo into an EXPERT tattoo stencil. All fine lines, blend zones and tonal detail as linework only on white background.'
       };
@@ -1560,10 +1571,14 @@ async function generateStencil() {
       var svgEnd = resp.lastIndexOf('</svg>');
       if (svgStart >= 0 && svgEnd > svgStart) {
         var blob = new Blob([resp.slice(svgStart, svgEnd + 6)], { type: 'image/svg+xml' });
-        STATE.stencilOutput = URL.createObjectURL(blob);
-      } else { throw new Error('No SVG in response — try again'); }
+        result = URL.createObjectURL(blob);
+      } else {
+        throw new Error('No SVG in response — try again');
+      }
+    }
 
-    } else {
+    if (!result) {
+      // Canvas fallback
       var img = new Image();
       img.crossOrigin = 'anonymous';
       await new Promise(function(res, rej) { img.onload = res; img.onerror = rej; img.src = STATE.stencilInput; });
@@ -1576,9 +1591,10 @@ async function generateStencil() {
       var d = id.data;
       for (var px = 0; px < d.length; px += 4) { var v = d[px] < 128 ? 0 : 255; d[px]=v; d[px+1]=v; d[px+2]=v; }
       ctx.putImageData(id, 0, 0);
-      STATE.stencilOutput = canvas.toDataURL('image/png');
+      result = canvas.toDataURL('image/png');
     }
 
+    STATE.stencilOutput = result;
     STATE.stencilLoading = false;
     STATE.baPosition = 50;
     render();
