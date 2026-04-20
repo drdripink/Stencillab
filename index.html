@@ -1533,31 +1533,36 @@ async function generateStencil() {
     var mode = STATE.stencilSettings && STATE.stencilSettings.level ? STATE.stencilSettings.level : 'SIMPLE';
     var hasRep = STATE.replicateKey && STATE.replicateKey.trim() !== '' && STATE.replicateKey !== 'PASTE_YOUR_REPLICATE_KEY_HERE';
     var hasApi = STATE.apiKey && STATE.apiKey.trim() !== '' && STATE.apiKey !== 'PASTE_YOUR_ANTHROPIC_API_KEY_HERE';
+
     if (hasRep) {
-      var repResult = await callReplicate('jagilley/controlnet-scribble:435061a1b5a4c1e26740464bf786efdfa9cb3a3ac488595a2de23e143fdb0117', { image: STATE.stencilInput, prompt: 'professional tattoo stencil linework, bold black outlines on white background', num_samples: '1', image_resolution: '512', detect_resolution: 512, ddim_steps: 20, scale: 9, eta: 0 });
+      var repResult = await callReplicate(
+        'jagilley/controlnet-scribble:435061a1b5a4c1e26740464bf786efdfa9cb3a3ac488595a2de23e143fdb0117',
+        { image: STATE.stencilInput, prompt: 'professional tattoo stencil, bold black outlines, white background, clean linework', num_samples: '1', image_resolution: '512', detect_resolution: 512, ddim_steps: 20, scale: 9, eta: 0 }
+      );
       STATE.stencilOutput = repResult;
+
     } else if (hasApi) {
       var prompts = {
-        SIMPLE: 'Convert this photo into a SIMPLE tattoo stencil. Bold clean black outlines on pure white background only. No shading, no grey, no fill. Pure crisp black lines.',
+        SIMPLE: 'Convert this photo into a SIMPLE tattoo stencil. Bold clean black outlines on pure white background only. No shading, no grey, no fill.',
         MODERATE: 'Convert this photo into a MODERATE tattoo stencil. Black outlines plus key shadow boundary lines on white background. No solid fills.',
-        EXPERT: 'Convert this photo into an EXPERT tattoo stencil. All fine lines, blend zones and tonal detail as linework only, on white background.'
+        EXPERT: 'Convert this photo into an EXPERT tattoo stencil. All fine lines, blend zones and tonal detail as linework only on white background.'
       };
       var prompt = prompts[mode] || prompts.SIMPLE;
-      var imgB64 = await imageToBase64(STATE.stencilInput);
+      var imgData = await imageToBase64(STATE.stencilInput);
+      var mime = (imgData && imgData.mime) ? imgData.mime : 'image/jpeg';
+      var b64 = (imgData && imgData.b64) ? imgData.b64 : imgData;
       var msgs = [{ role: 'user', content: [
-        { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: imgB64 } },
-        { type: 'text', text: prompt + ' Reply with ONLY a complete SVG element, no markdown, no explanation. Use viewBox="0 0 512 512", white background rect, black strokes only.' }
+        { type: 'image', source: { type: 'base64', media_type: mime, data: b64 } },
+        { type: 'text', text: prompt + ' Reply with ONLY a complete SVG element. Use viewBox="0 0 512 512", white background rect, black strokes only.' }
       ]}];
       var resp = await callClaude(msgs, 4000);
       var svgStart = resp.indexOf('<svg');
       var svgEnd = resp.lastIndexOf('</svg>');
       if (svgStart >= 0 && svgEnd > svgStart) {
-        var svgText = resp.slice(svgStart, svgEnd + 6);
-        var blob = new Blob([svgText], { type: 'image/svg+xml' });
+        var blob = new Blob([resp.slice(svgStart, svgEnd + 6)], { type: 'image/svg+xml' });
         STATE.stencilOutput = URL.createObjectURL(blob);
-      } else {
-        throw new Error('No SVG in response — try again');
-      }
+      } else { throw new Error('No SVG in response — try again'); }
+
     } else {
       var img = new Image();
       img.crossOrigin = 'anonymous';
@@ -1573,6 +1578,7 @@ async function generateStencil() {
       ctx.putImageData(id, 0, 0);
       STATE.stencilOutput = canvas.toDataURL('image/png');
     }
+
     STATE.stencilLoading = false;
     STATE.baPosition = 50;
     render();
