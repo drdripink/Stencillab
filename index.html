@@ -1084,7 +1084,6 @@ function renderProfile() {
 // ── STENCIL ─────────────────────────────────────────────────────────────────
 function renderStencil() {
   var hasOutput = !!STATE.stencilOutput;
-  var thick = STATE.stencilThickness !== undefined ? STATE.stencilThickness : 50;
   return '<div class="stencil-wrap">' +
     '<div class="stencil-header">' +
       '<h1 class="page-title">STENCIL GENERATOR</h1>' +
@@ -1109,23 +1108,16 @@ function renderStencil() {
         '<div class="section-label">OUTPUT</div>' +
         (hasOutput ?
           '<div class="output-image-wrap">' +
-            '<img src="' + STATE.stencilOutput + '" class="stencil-output-img" id="stencil-out-img" />' +
-          '</div>' :
-          '<div class="output-placeholder">' +
-            '<div class="output-placeholder-text">STENCIL APPEARS HERE</div>' +
-          '</div>') +
-        (hasOutput ? '<div class="stencil-sliders">' +
-          '<div class="slider-row">' +
-            '<div class="slider-label-row"><span class="slider-label">LINE THICKNESS</span><span class="slider-value">' + thick + '%</span></div>' +
-            '<div class="slider-track-row"><span class="slider-hint-left">Thin</span>' +
-              '<input type="range" class="stencil-slider" id="slider-thick" min="0" max="100" value="' + thick + '" />' +
-            '<span class="slider-hint-right">Thick</span></div>' +
+            '<img src="' + STATE.stencilOutput + '" class="stencil-output-img" />' +
           '</div>' +
           '<div class="output-actions">' +
             '<a href="' + STATE.stencilOutput + '" download="stencil.png" class="dl-btn">&#8595; DOWNLOAD</a>' +
             '<button class="new-btn" id="new-stencil-btn">NEW</button>' +
-          '</div>' +
-        '</div>' : '') +
+          '</div>'
+          :
+          '<div class="output-placeholder">' +
+            '<div class="output-placeholder-text">STENCIL APPEARS HERE</div>' +
+          '</div>') +
       '</div>' +
     '</div>' +
   '</div>';
@@ -1549,76 +1541,70 @@ function opencvEdges(canvas, mode){
 }
 async function generateStencil(){
   if(!STATE.stencilInput||STATE.stencilLoading)return;
-  STATE.stencilLoading=true;STATE.stencilEdges=null;render();
-    var mode='expert';// always generate at expert quality
-  var hasRep=STATE.replicateKey&&STATE.replicateKey.length>10&&!STATE.replicateKey.includes('PASTE');
+  STATE.stencilLoading=true;
+  STATE.stencilOutput=null;
+  render();
   try{
-    var img=new Image();
-    await new Promise(function(res,rej){img.onload=res;img.onerror=rej;img.src=STATE.stencilInput;});
-    var SIZE=1024;
-    var canvas=document.getElementById('stencilCanvas');
-    canvas.width=SIZE;canvas.height=SIZE;
-    var ctx=canvas.getContext('2d');
-    var sc=Math.min(SIZE/img.width,SIZE/img.height);
-    var sw=Math.round(img.width*sc),sh=Math.round(img.height*sc);
-    var ox=Math.round((SIZE-sw)/2),oy=Math.round((SIZE-sh)/2);
-    ctx.fillStyle='#fff';ctx.fillRect(0,0,SIZE,SIZE);
-    ctx.drawImage(img,ox,oy,sw,sh);
+    var repKey=STATE.replicateKey;
+    var hasRep=repKey&&repKey.trim().length>=10&&repKey!=='PASTE_YOUR_REPLICATE_KEY_HERE';
+    var apiKey=STATE.apiKey;
+    var hasApi=apiKey&&apiKey.trim().length>10&&apiKey!=='PASTE_YOUR_ANTHROPIC_API_KEY_HERE';
+    if(!hasRep&&!hasApi){throw new Error('No AI key configured — add your API key in Settings');}
+
+    var result=null;
+
+    // Professional tattoo stencil prompt
+    var stencilPrompt='Create a professional tattoo stencil from this reference image. Convert into clean precise black linework on pure white background. Faithfully trace every element: individual hair strands, eyelashes, eyebrows, facial features, lips, nose, skin contour lines, clothing, jewelry, tears, and all fine texture details. Use bold outer contour lines and finer inner detail lines for proper tattoo line hierarchy. Include light dotwork or fine hatching only to indicate shadow placement — do not fill or shade. Keep all lines smooth, continuous, and stencil-ready. Preserve the exact composition, expression, and all organic elements from the reference. Remove noise but retain all intentional detail. Output: high-resolution black linework on pure white, ready for tattoo transfer.';
+
     if(hasRep){
       try{
-        // Prepare source image as data URL (1024x1024 with white pad) for Nano Banana
-        var srcDataUrl=canvas.toDataURL('image/png');
-        // Mode-specific line art prompts for google/nano-banana-2
-        var bananaPrompts={
-          simple:'Create a professional tattoo stencil from the provided reference image. Convert the artwork into clean black linework while preserving all important facial features, expression, and composition. Use bold outer lines and thinner inner lines. Ensure all lines are smooth, stencil-ready, and high contrast (black on white). Output as a high-resolution tattoo stencil.',
-          moderate:'Create a professional tattoo stencil from the provided reference image. Convert the artwork into clean black linework while preserving all important facial features, expression, and composition. Include clear shading guides using fine line hatching or light dashed contour lines to indicate shadow placement. Use bold outer lines and thinner inner lines. Ensure all lines are smooth, stencil-ready, and high contrast (black on white).',
-          expert:'Create a professional tattoo stencil from the provided reference image. Convert the artwork into clean black linework while preserving all important facial features, expression, and composition. Include clear shading guides using stippling/dot shading guides for soft facial gradients, fine line hatching, or light dashed contour lines to indicate shadow placement (do not fully shade, only map it). Maintain the original shading patterns and flow from the reference, especially around the eyes, nose, lips, and organic elements. Preserve emotional expression and tear/shadow flow under the eyes. Use bold outer lines and thinner inner lines to create proper tattoo line hierarchy. Keep organic elements (hair, leaves, shapes) fluid but readable for stencil transfer. Simplify overly complex or messy lines while keeping the design recognizable and balanced. Avoid overfilling — prioritize skin-readable spacing and longevity. Ensure all lines are smooth, stencil-ready, and high contrast (black on white). Remove unnecessary noise but retain intentional texture and shading direction. Output as a high-resolution tattoo stencil with visible shading markers for artist guidance.'
-        };
-        var bananaPrompt=bananaPrompts.expert;// always expert quality
+        // Prep source image as 1024 white-padded canvas
+        var img=new Image();img.crossOrigin='anonymous';
+        await new Promise(function(res,rej){img.onload=res;img.onerror=rej;img.src=STATE.stencilInput;});
+        var S=1024;
+        var src=document.createElement('canvas');src.width=src.height=S;
+        var sx=src.getContext('2d');sx.fillStyle='#fff';sx.fillRect(0,0,S,S);
+        var scale=Math.min(S/img.width,S/img.height);
+        var sw=Math.round(img.width*scale),sh=Math.round(img.height*scale);
+        sx.drawImage(img,Math.round((S-sw)/2),Math.round((S-sh)/2),sw,sh);
+        var srcDataUrl=src.toDataURL('image/png');
+
         var output=await callReplicate('google/nano-banana-2',{
-          prompt:bananaPrompt,
+          prompt:stencilPrompt,
           image_input:[srcDataUrl],
           output_format:'png',
           aspect_ratio:'match_input_image'
         });
-        var rawUrl=Array.isArray(output)?output[0]:output;
-        STATE.stencilRawOutput=rawUrl;
-        var aiUrl=Array.isArray(output)?output[0]:output;
-        var aiImg=new Image();aiImg.crossOrigin='anonymous';
-        await new Promise(function(res,rej){aiImg.onload=res;aiImg.onerror=rej;aiImg.src=aiUrl;});
-        // Resize output to 1024 square white canvas
-        canvas.width=SIZE;canvas.height=SIZE;
-        ctx.fillStyle='#fff';ctx.fillRect(0,0,SIZE,SIZE);
-        var osc=Math.min(SIZE/aiImg.width,SIZE/aiImg.height);
-        var osw=Math.round(aiImg.width*osc),osh=Math.round(aiImg.height*osc);
-        var oox=Math.round((SIZE-osw)/2),ooy=Math.round((SIZE-osh)/2);
-        ctx.drawImage(aiImg,oox,ooy,osw,osh);
-        // Threshold to pure black/white for true stencil output
-        var thresh=160;// threshold: higher=thinner cleaner lines
-        try{
-          var d=ctx.getImageData(0,0,SIZE,SIZE),out=new ImageData(SIZE,SIZE);
-          for(var i=0;i<SIZE*SIZE;i++){
-            var lm=0.2126*d.data[i*4]+0.7152*d.data[i*4+1]+0.0722*d.data[i*4+2];
-            var ink=lm<200;
-            out.data[i*4]=ink?0:255;out.data[i*4+1]=ink?0:255;out.data[i*4+2]=ink?0:255;out.data[i*4+3]=255;
-          }
-          ctx.putImageData(out,0,0);
-          final=canvas.toDataURL('image/png');
-        }catch(e){final=canvas.toDataURL('image/png');}
-        STATE.stencilOutput=final;STATE.stencilLoading=false;render();showToast('AI stencil generated!','success');return;
-      }catch(repErr){console.error('Stencil AI error:',repErr);showToast('AI error — using local: '+repErr.message,'error');}
+        // Use raw AI output DIRECTLY — no canvas post-processing
+        result=Array.isArray(output)?output[0]:output;
+      }catch(repErr){
+        if(hasApi){showToast('Switching to Claude AI...','info');}
+        else{throw repErr;}
+      }
     }
-    ctx.fillStyle='#fff';ctx.fillRect(0,0,SIZE,SIZE);ctx.drawImage(img,ox,oy,sw,sh);
-    var cvR=null;
-    try{await loadOpenCV();if(typeof cv!=='undefined'&&cv.Mat)cvR=opencvEdgesFaithful(canvas,mode);}catch(e){}
-    if(cvR){STATE.stencilOutput=cvR;STATE.stencilLoading=false;render();showToast('Stencil generated!','success');return;}
-    ctx.fillStyle='#fff';ctx.fillRect(0,0,SIZE,SIZE);ctx.drawImage(img,ox,oy,sw,sh);
-    var id=ctx.getImageData(0,0,SIZE,SIZE);
-    var res=processStencilPipeline(id,SIZE,SIZE,mode);
-    ctx.putImageData(res.pixels,0,0);STATE.stencilEdges=res.edges;
-    STATE.stencilOutput=canvas.toDataURL('image/png');
-    STATE.stencilLoading=false;render();showToast('Stencil generated!','success');
-  }catch(err){STATE.stencilLoading=false;render();showToast('Error: '+err.message,'error');}
+
+    if(!result&&hasApi){
+      var imgData=await imageToBase64(STATE.stencilInput);
+      var mime=(imgData&&imgData.mime)?imgData.mime:'image/jpeg';
+      var b64=(imgData&&imgData.b64)?imgData.b64:imgData;
+      var msgs=[{role:'user',content:[
+        {type:'image',source:{type:'base64',media_type:mime,data:b64}},
+        {type:'text',text:stencilPrompt+' Reply with ONLY a complete SVG element. viewBox="0 0 512 512", white background, black strokes only.'}
+      ]}];
+      var resp=await callClaude(msgs,4000);
+      var s=resp.indexOf('<svg'),e=resp.lastIndexOf('</svg>');
+      if(s>=0&&e>s){result=URL.createObjectURL(new Blob([resp.slice(s,e+6)],{type:'image/svg+xml'}));}
+      else{throw new Error('Generation failed — try again');}
+    }
+
+    STATE.stencilOutput=result;
+    STATE.stencilRawOutput=result;
+    STATE.stencilLoading=false;
+    render();
+  }catch(err){
+    STATE.stencilLoading=false;render();
+    showToast('Error: '+err.message,'error');
+  }
 }
 
 function opencvEdgesFaithful(canvas,mode){
@@ -1907,51 +1893,7 @@ function processStencilPipeline(imageData, w, h, mode) {
   return {pixels:out_img, edges:finalP};
 }
 
-function adjustIntensity() {
-  if (!STATE.stencilRawOutput) return;
-  var detail = STATE.stencilDetail !== undefined ? STATE.stencilDetail : 80;
-  var thick = STATE.stencilThickness !== undefined ? STATE.stencilThickness : 50;
-  // Detail: high = low threshold (keep more lines). Range: 60 (max detail) to 220 (clean)
-  var thresh = Math.round(220 - (detail / 100) * 160);
-  var img = new Image();
-  img.crossOrigin = 'anonymous';
-  img.onload = function() {
-    var S = 1024;
-    var c = document.createElement('canvas'); c.width = c.height = S;
-    var ctx = c.getContext('2d');
-    ctx.fillStyle = '#fff'; ctx.fillRect(0,0,S,S);
-    var sc = Math.min(S/img.width, S/img.height);
-    var sw = Math.round(img.width*sc), sh = Math.round(img.height*sc);
-    ctx.drawImage(img, Math.round((S-sw)/2), Math.round((S-sh)/2), sw, sh);
-    var id = ctx.getImageData(0,0,S,S); var d = id.data;
-    // Apply threshold
-    for (var i=0;i<d.length;i+=4){
-      var lum = 0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];
-      var v = lum < thresh ? 0 : 255; d[i]=d[i+1]=d[i+2]=v; d[i+3]=255;
-    }
-    // Boldness: expand black pixels (dilation simulation via contrast boost)
-    if (thick > 50) {
-      var r = Math.round((thick-50)/50*2); // 0-2 pixel dilation radius
-      if (r > 0) {
-        var src2 = new Uint8ClampedArray(d);
-        for (var y=r;y<S-r;y++){for(var x=r;x<S-r;x++){
-          var base=(y*S+x)*4;
-          if(src2[base]===255){ // white pixel - check if any neighbour is black
-            var hasBlack=false;
-            for(var dy=-r;dy<=r&&!hasBlack;dy++){for(var dx=-r;dx<=r&&!hasBlack;dx++){
-              if(src2[((y+dy)*S+(x+dx))*4]===0) hasBlack=true;
-            }}
-            if(hasBlack){d[base]=d[base+1]=d[base+2]=0;}
-          }
-        }}
-      }
-    }
-    ctx.putImageData(id,0,0);
-    STATE.stencilOutput = c.toDataURL('image/png');
-    render();
-  };
-  img.src = STATE.stencilRawOutput;
-}
+function adjustIntensity() { /* post-processing removed */ }
 
 function handleStencilUpload(input) {
   var file = input.files[0];
@@ -2099,19 +2041,7 @@ function deleteMyAccount() {
 }
 
 
-function wireStencilSliders() {
-  var tSlider = document.getElementById('slider-thick');
-  if (tSlider) {
-    tSlider.oninput = function() {
-      STATE.stencilThickness = parseInt(this.value);
-      var lbl = this.closest('.slider-row').querySelector('.slider-value');
-      if (lbl) lbl.textContent = this.value + '%';
-      this.style.background = 'linear-gradient(to right,#ffffff 0%,#ffffff ' + this.value + '%,#333333 ' + this.value + '%,#333333 100%)';
-      clearTimeout(window.__sliderTimer);
-      window.__sliderTimer = setTimeout(function(){ adjustIntensity(); }, 300);
-    };
-  }
-}
+function wireStencilSliders() { /* sliders removed */ }
 
 function attachEvents() {
   // Wire new stencil UI controls
