@@ -636,77 +636,6 @@ input[type=range]::-webkit-slider-thumb{
   .profile-hero{flex-direction:column;text-align:center}
   .input-row{grid-template-columns:1fr}
 }
-
-.aw{padding:0 0 40px}.at{font-family:var(--font-heading);font-size:20px;letter-spacing:3px;color:var(--white);margin:0 0 16px}
-.a-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
-@media(max-width:600px){.a-stats{grid-template-columns:repeat(2,1fr)}}
-.asc{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 10px;text-align:center;cursor:pointer;transition:border-color .2s,transform .15s}
-.asc:hover{border-color:var(--neon);transform:translateY(-2px)}
-.asn{font-family:var(--font-heading);font-size:24px;font-weight:700;color:var(--white)}
-.asl{font-size:9px;letter-spacing:2px;color:var(--grey);margin-top:4px;text-transform:uppercase}
-.asc-s{border-color:var(--neon)}.asc-s .asn{color:var(--neon)}
-.asc-r{border-color:#4ade80}.asc-r .asn{color:#4ade80}
-.asc-c{border-color:#f87171}.asc-c .asn{color:#f87171}
-.a-filters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
-.afb{background:var(--surface2);border:1px solid var(--border);color:var(--grey-light);font-size:11px;font-weight:700;letter-spacing:1px;padding:7px 12px;border-radius:6px;cursor:pointer;text-transform:uppercase;transition:all .2s}
-.afb:hover,.afb-on{background:var(--neon);border-color:var(--neon);color:var(--bg)}
-.a-list{display:flex;flex-direction:column;gap:8px}
-.a-row{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;transition:border-color .2s}
-.a-row:hover{border-color:var(--border2)}
-.a-left{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
-.a-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.dot-grn{background:#4ade80;box-shadow:0 0 6px #4ade80}.dot-red{background:#f87171;box-shadow:0 0 6px #f87171}.dot-gry{background:var(--grey)}
-.a-info{min-width:0}.a-email{font-size:13px;color:var(--white-dim);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px}
-.a-meta{display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap}
-.ab{font-size:9px;font-weight:700;letter-spacing:1px;padding:2px 7px;border-radius:4px;text-transform:uppercase}
-.ab-pro{background:rgba(99,102,241,.2);color:#818cf8;border:1px solid rgba(99,102,241,.3)}
-.ab-stu{background:rgba(234,179,8,.15);color:#fbbf24;border:1px solid rgba(234,179,8,.3)}
-.ab-free{background:var(--surface3);color:var(--grey);border:1px solid var(--border)}
-.ab-su{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.3)}
-.a-txt{font-size:10px;color:var(--grey)}.a-grn{color:#4ade80}.a-red{color:#f87171}
-.a-del{background:transparent;border:1px solid var(--border);color:var(--grey);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:14px;transition:all .2s;flex-shrink:0}
-.a-del:hover{border-color:#f87171;color:#f87171;background:rgba(239,68,68,.1)}
-.a-empty{color:var(--grey);font-size:13px;padding:40px;text-align:center}
-.del-my-btn{background:transparent;border:1px solid #f87171;color:#f87171;padding:12px 20px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;letter-spacing:1px;width:100%;margin-top:24px;transition:all .2s}
-.del-my-btn:hover{background:rgba(239,68,68,.1)}
-
-.create-stencil-btn{width:100%;padding:22px;background:#ffffff;color:#050505;font-family:var(--font-heading);font-size:18px;font-weight:900;letter-spacing:4px;border:none;border-radius:10px;cursor:pointer;margin-top:14px;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 4px 24px rgba(255,255,255,.2)}
-.create-stencil-btn:hover:not(:disabled){background:#e8e8e8;transform:translateY(-2px)}
-.create-stencil-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.create-stencil-btn.loading{background:#1a1a1a;color:#aaaaaa}
-.stencil-sliders{margin-top:16px;display:flex;flex-direction:column;gap:16px}
-.slider-row{display:flex;flex-direction:column;gap:6px}
-.slider-label-row{display:flex;justify-content:space-between;align-items:center}
-.slider-label{font-family:var(--font-heading);font-size:11px;letter-spacing:2px;color:#aaaaaa}
-.slider-value{font-family:var(--font-heading);font-size:13px;font-weight:700;color:#ffffff}
-.slider-track-row{display:flex;align-items:center;gap:10px}
-.slider-hint-left,.slider-hint-right{font-size:10px;color:#666666;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;min-width:36px}
-.slider-hint-right{text-align:right}
-.stencil-slider{flex:1;-webkit-appearance:none;height:4px;border-radius:2px;background:linear-gradient(to right,#ffffff 0%,#ffffff 85%,#333333 85%,#333333 100%);outline:none;cursor:pointer}
-.stencil-slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#ffffff;border:3px solid #ffffff;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4)}
-.stencil-slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#ffffff;border:3px solid #ffffff;cursor:pointer}
-.output-actions{display:flex;gap:10px;margin-top:12px}
-.dl-btn{flex:1;padding:12px;background:#141414;border:1px solid #333333;color:#cccccc;font-family:var(--font-heading);font-size:13px;letter-spacing:2px;text-decoration:none;border-radius:8px;text-align:center;transition:all .2s}
-.dl-btn:hover{border-color:#ffffff;color:#ffffff}
-.new-btn{padding:12px 20px;background:transparent;border:1px solid #333333;color:#aaaaaa;font-family:var(--font-heading);font-size:13px;letter-spacing:2px;border-radius:8px;cursor:pointer;transition:all .2s}
-.new-btn:hover{border-color:#ffffff;color:#ffffff}
-.stencil-output-img{width:100%;border-radius:8px;background:#fff}
-.output-image-wrap{background:#fff;border-radius:10px;overflow:hidden;border:1px solid var(--border)}
-
-.stencil-wrap{max-width:1200px}
-.stencil-layout{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:16px}
-.stencil-left,.stencil-right{display:flex;flex-direction:column}
-.upload-zone{display:block;width:100%;border:2px dashed var(--border);border-radius:12px;cursor:pointer;overflow:hidden;transition:border-color .2s;height:220px}
-.upload-zone:hover{border-color:#ffffff}
-.upload-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;height:220px;gap:12px}
-.upload-icon{font-size:28px;color:var(--grey)}
-.upload-text{font-family:var(--font-heading);font-size:13px;letter-spacing:2px;color:var(--grey-light)}
-.upload-sub{font-size:10px;color:var(--grey);letter-spacing:1px}
-.upload-preview{width:100%;height:220px;object-fit:cover;display:block}
-.output-placeholder{border:1px dashed var(--border);border-radius:12px;display:flex;align-items:center;justify-content:center;height:220px}
-.output-placeholder-text{font-family:var(--font-heading);font-size:11px;letter-spacing:2px;color:#555555}
-.section-label{font-size:10px;letter-spacing:3px;color:#666666;text-transform:uppercase;margin-bottom:10px}
-@media(max-width:768px){.stencil-layout{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -715,10 +644,6 @@ input[type=range]::-webkit-slider-thumb{
 <script>
 
 var STATE = {
-  stencilDetail: 85,
-  stencilThickness: 50,
-  stencilRawOutput: null,
-  adminFilter: 'all',
   page: 'auth',
   authMode: 'login',
   authStep: 'credentials',  // credentials | onboard
@@ -757,22 +682,12 @@ var STATE = {
   users: [
     { id:'1', email:'jake@gmail.com', name:'Jake Morrison', plan:'pro', active:true, freeAccess:false, discount:0, role:'user', sponsored:false, instagram:'@jakemorrisson_ink', dob:'1990-05-12' },
     { id:'2', email:'luna@studio.com', name:'Luna Ink', plan:'studio', active:true, freeAccess:true, discount:15, role:'user', sponsored:true, instagram:'@luna.ink.studio', dob:'1995-03-28' },
-    { id:'6', email:'stencillabadmin@gmail.com', name:'Super User', plan:'sponsored', active:true, freeAccess:true, discount:100, role:'super_admin', sponsored:true, instagram:'@stencillab', dob:'' }
+    { id:'6', email:'stencillabadmin@gmail.com', name:'Studio Admin', plan:'sponsored', active:true, freeAccess:true, discount:100, role:'super_admin', sponsored:true, instagram:'@stencillab', dob:'' }
   ]
 };
 
 // ── RENDER ─────────────────────────────────────────────────────────────────
 function render() {
-  // Persist API keys to localStorage so they survive across sessions on all devices
-  try {
-    if (STATE.apiKey && STATE.apiKey.length > 10 && STATE.apiKey !== 'PASTE_YOUR_ANTHROPIC_API_KEY_HERE') {
-      localStorage.setItem('sl_api_key', STATE.apiKey);
-    }
-    if (STATE.replicateKey && STATE.replicateKey.length >= 10 && STATE.replicateKey !== 'PASTE_YOUR_REPLICATE_KEY_HERE') {
-      localStorage.setItem('sl_rep_key', STATE.replicateKey);
-    }
-  } catch(e) {}
-
   var root = document.getElementById('root');
   if (!root) return;
 
@@ -1083,41 +998,76 @@ function renderProfile() {
 
 // ── STENCIL ─────────────────────────────────────────────────────────────────
 function renderStencil() {
-  var hasOutput = !!STATE.stencilOutput;
-  return '<div class="stencil-wrap">' +
-    '<div class="stencil-header">' +
-      '<h1 class="page-title">STENCIL GENERATOR</h1>' +
-      '<p class="page-sub">Professional AI-powered tattoo stencils &bull; <span class="ai-dot"></span> ' +
-        (STATE.replicateKey && STATE.replicateKey.trim().length >= 10 && STATE.replicateKey !== "PASTE_YOUR_REPLICATE_KEY_HERE" ? 'ControlNet AI active' :
-         STATE.apiKey && STATE.apiKey.trim().length > 10 && STATE.apiKey !== "PASTE_YOUR_ANTHROPIC_API_KEY_HERE" ? 'Claude AI active' : 'Add API key in Settings') +
-      '</span></p>' +
-    '</div>' +
-    '<div class="stencil-layout">' +
-      '<div class="stencil-left">' +
-        '<div class="section-label">UPLOAD REFERENCE PHOTO</div>' +
-        '<label class="upload-zone" id="stencil-drop">' +
-          (STATE.stencilInput ? '<img src="' + STATE.stencilInput + '" class="upload-preview" />' :
-            '<div class="upload-placeholder"><div class="upload-icon">&#8593;</div><div class="upload-text">TAP TO UPLOAD</div><div class="upload-sub">JPG &middot; PNG &middot; WebP</div></div>') +
-          '<input type="file" id="stencil-file" accept="image/*" style="display:none" />' +
-        '</label>' +
-        '<button class="create-stencil-btn' + (STATE.stencilLoading ? ' loading' : '') + '" id="gen-btn" ' + (!STATE.stencilInput || STATE.stencilLoading ? 'disabled' : '') + '>' +
-          (STATE.stencilLoading ? '<span class="spin">&#9696;</span> GENERATING...' : 'CREATE STENCIL') +
-        '</button>' +
-      '</div>' +
-      '<div class="stencil-right">' +
-        '<div class="section-label">OUTPUT</div>' +
-        (hasOutput ?
-          '<div class="output-image-wrap"><img src="' + STATE.stencilOutput + '" class="stencil-output-img" /></div>' +
-          '<div class="output-actions" style="margin-top:14px">' +
-            '<a href="' + STATE.stencilOutput + '" download="stencil.png" class="dl-btn">&#8595; DOWNLOAD</a>' +
-            '<button class="new-btn" id="new-stencil-btn">NEW</button>' +
-          '</div>' :
-          '<div class="output-placeholder"><div class="output-placeholder-text">STENCIL APPEARS HERE</div></div>') +
-      '</div>' +
-    '</div>' +
-  '</div>';
+  var s = STATE.stencilSettings;
+  var modes = [
+    {id:'simple',   label:'SIMPLE',   tag:'CLEAN LINES',  desc:'Bold outlines only — easiest to trace',       cls:'active-simple',   color:'var(--success)'},
+    {id:'moderate', label:'MODERATE', tag:'BALANCED',      desc:'Main lines plus shadow boundaries',            cls:'active-moderate', color:'var(--warning)'},
+    {id:'expert',   label:'EXPERT',   tag:'FULL DETAIL',   desc:'All detail, blend zones, complete tonal map',  cls:'active-expert',   color:'var(--accent)'}
+  ];
+  var html = '<div class="page-header"><div class="page-title">STENCIL <span>GENERATOR</span></div>';
+  html += '<div class="page-subtitle">Professional AI-powered tattoo stencils &bull; ' + (STATE.replicateKey && STATE.replicateKey.length>10 && !STATE.replicateKey.includes('PASTE') ? '<span style="color:#aaa">&#9679; ControlNet AI active</span>' : '<span style="color:#555">&#9679; Canvas mode (add Replicate key for AI)</span>') + '</div></div>';
+  html += '<div class="grid-2">';
+
+  // Left
+  html += '<div>';
+  html += '<label class="label">UPLOAD REFERENCE PHOTO</label>';
+  html += '<div class="upload-zone' + (STATE.stencilInput?' has-image':'') + '" id="stencil-upload" style="height:210px">';
+  if (STATE.stencilInput) {
+    html += '<img src="' + STATE.stencilInput + '" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;border-radius:var(--radius2)"/>';
+    html += '<div class="upload-overlay"><button class="btn btn-outline btn-sm">CHANGE PHOTO</button></div>';
+  } else {
+    html += '<div style="display:flex;flex-direction:column;align-items:center;gap:10px">';
+    html += '<svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="var(--text3)" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>';
+    html += '<div style="font-family:Bebas Neue,sans-serif;font-size:14px;letter-spacing:3px;color:var(--text3)">TAP TO UPLOAD</div>';
+    html += '<div style="font-size:11px;color:var(--text3)">JPG &middot; PNG &middot; WebP</div></div>';
+  }
+  html += '</div>';
+  html += '<input type="file" id="stencil-file" accept="image/*" style="display:none"/>';
+
+  html += '<label class="label" style="margin-top:18px">STENCIL TYPE</label>';
+  modes.forEach(function(m) {
+    var active = s.level === m.id;
+    html += '<div class="mode-card' + (active?' '+m.cls:'') + '" data-level="' + m.id + '">';
+    html += '<div class="mode-radio" style="border-color:' + (active?m.color:'var(--border2)') + ';background:' + (active?m.color:'transparent') + '">';
+    if(active) html += '<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4"><polyline points="20 6 9 17 4 12"/></svg>';
+    html += '</div><div>';
+    html += '<div style="display:flex;align-items:center;gap:8px">';
+    html += '<span style="font-family:Bebas Neue,sans-serif;font-size:15px;letter-spacing:2px;color:' + (active?m.color:'var(--text)') + '">' + m.label + '</span>';
+    html += '<span style="font-family:Bebas Neue,sans-serif;font-size:9px;padding:2px 7px;border-radius:3px;background:' + (active?m.color:'var(--surface3)') + ';color:' + (active?'#fff':'var(--text3)') + '">' + m.tag + '</span>';
+    html += '</div><div style="font-size:11px;color:var(--text3);margin-top:2px">' + m.desc + '</div></div></div>';
+  });
+
+  html += '<button id="btn-generate-stencil" ' + ((!STATE.stencilInput||STATE.stencilLoading)?'disabled':'') + ' style="width:100%;height:54px;border-radius:var(--radius);border:none;cursor:pointer;background:linear-gradient(135deg,var(--accent),var(--accent2));font-family:Bebas Neue,sans-serif;font-size:19px;letter-spacing:3px;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 16px rgba(255,255,255,.1);' + ((!STATE.stencilInput||STATE.stencilLoading)?'opacity:.4;cursor:not-allowed;box-shadow:none':'') + '">';
+  html += STATE.stencilLoading ? '<span class="spinner"></span> PROCESSING...' : 'GENERATE STENCIL';
+  html += '</button></div>';
+
+  // Right
+  html += '<div><label class="label">OUTPUT</label>';
+  if (STATE.stencilOutput) {
+    html += '<div style="background:#fff;border-radius:var(--radius2);overflow:hidden;border:1px solid var(--border);box-shadow:0 4px 24px rgba(0,0,0,.4)">';
+    html += '<img id="stencil-result" src="' + STATE.stencilOutput + '" style="width:100%;display:block"/></div>';
+    html += '<div style="margin-top:14px;padding:16px 18px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius2)">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">';
+    html += '<label class="label" style="margin:0">LINE INTENSITY</label>';
+    html += '<div id="intensity-val" style="font-family:Bebas Neue,sans-serif;font-size:22px;color:var(--accent)">' + Math.round(STATE.stencilSettings.lineIntensity*100) + '%</div>';
+    html += '</div><input type="range" id="intensity-slider" min="0" max="1" step="0.01" value="' + STATE.stencilSettings.lineIntensity + '" style="width:100%"/>';
+    html += '<div style="display:flex;justify-content:space-between;margin-top:6px"><span style="font-size:10px;color:var(--text3)">Light</span><span style="font-size:10px;color:var(--text3)">Bold</span></div>';
+    html += '</div>';
+    html += '<div style="display:flex;gap:8px;margin-top:12px">';
+    html += '<button id="btn-download-stencil" class="btn btn-primary" style="flex:1;height:44px">DOWNLOAD</button>';
+    html += '<button id="btn-new-stencil" class="btn btn-outline" style="flex:1;height:44px">NEW</button>';
+    html += '</div>';
+  } else {
+    html += '<div style="border:1.5px dashed var(--border2);border-radius:var(--radius2);height:340px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:var(--surface2)">';
+    html += '<svg width="52" height="52" fill="none" viewBox="0 0 24 24" stroke="var(--border2)" stroke-width="0.9"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>';
+    html += '<div style="font-family:Bebas Neue,sans-serif;font-size:16px;letter-spacing:3px;color:var(--text3)">STENCIL APPEARS HERE</div>';
+    html += '<div style="font-size:11px;color:var(--text3)">Upload a photo &bull; Select type &bull; Generate</div></div>';
+  }
+  html += '</div></div>';
+  return html;
 }
 
+// ── ENHANCE ─────────────────────────────────────────────────────────────────
 function renderEnhance() {
   var html = '<div class="page-header"><div class="page-title">PHOTO <span>ENHANCER</span></div>';
   html += '<div class="page-subtitle">AI restoration &amp; 4K upscaling</div></div>';
@@ -1278,45 +1228,36 @@ function renderSettings(){
 
 // ── ADMIN ───────────────────────────────────────────────────────────────────
 function renderAdmin() {
-  var users = STATE.users || [];
-  var pp = { free: 0, pro: 9.99, studio: 29.99 };
-  var active = users.filter(function(u){ return u.subscribed && !u.cancelled; });
-  var cancelled = users.filter(function(u){ return u.cancelled; });
-  var freeUsers = users.filter(function(u){ return !u.subscribed && !u.cancelled; });
-  var revenue = active.reduce(function(s,u){ return s + (pp[u.plan]||0); }, 0);
-  var byUsage = users.slice().sort(function(a,b){
-    return ((b.stencils_used||0)+(b.enhancements_used||0)+(b.generations_used||0))-((a.stencils_used||0)+(a.enhancements_used||0)+(a.generations_used||0));
+  var s = STATE.adminStats;
+  var filtered = STATE.users.filter(function(u){
+    return !STATE.searchQuery || u.email.toLowerCase().indexOf(STATE.searchQuery.toLowerCase())>=0 || (u.name||'').toLowerCase().indexOf(STATE.searchQuery.toLowerCase())>=0;
   });
-  var f = STATE.adminFilter || 'all';
-  var list = f==='subscribed'?active:f==='cancelled'?cancelled:f==='active'?byUsage.slice(0,20):users;
-  var sc =
-    '<div class="asc" onclick="STATE.adminFilter=\'all\';render()"><div class="asn">'+users.length+'</div><div class="asl">TOTAL USERS</div></div>'+
-    '<div class="asc asc-s" onclick="STATE.adminFilter=\'subscribed\';render()"><div class="asn">'+active.length+'</div><div class="asl">SUBSCRIBED</div></div>'+
-    '<div class="asc asc-r" onclick="STATE.adminFilter=\'subscribed\';render()"><div class="asn">&#163;'+revenue.toFixed(2)+'</div><div class="asl">MONTHLY REVENUE</div></div>'+
-    '<div class="asc asc-c" onclick="STATE.adminFilter=\'cancelled\';render()"><div class="asn">'+cancelled.length+'</div><div class="asl">CANCELLED</div></div>'+
-    '<div class="asc" onclick="STATE.adminFilter=\'active\';render()"><div class="asn">'+freeUsers.length+'</div><div class="asl">FREE USERS</div></div>';
-  var fb =
-    '<button class="afb'+(f==='all'?' afb-on':'')+'" onclick="STATE.adminFilter=\'all\';render()">All</button>'+
-    '<button class="afb'+(f==='subscribed'?' afb-on':'')+'" onclick="STATE.adminFilter=\'subscribed\';render()">Subscribed</button>'+
-    '<button class="afb'+(f==='cancelled'?' afb-on':'')+'" onclick="STATE.adminFilter=\'cancelled\';render()">Cancelled</button>'+
-    '<button class="afb'+(f==='active'?' afb-on':'')+'" onclick="STATE.adminFilter=\'active\';render()">Most Active</button>';
-  var rows = list.length===0?'<div class="a-empty">No users here</div>':list.map(function(u){
-    var use=(u.stencils_used||0)+(u.enhancements_used||0)+(u.generations_used||0);
-    var pb=u.plan==='pro'?'ab-pro':u.plan==='studio'?'ab-stu':'ab-free';
-    var dot=u.cancelled?'dot-red':u.subscribed?'dot-grn':'dot-gry';
-    return '<div class="a-row"><div class="a-left"><span class="a-dot '+dot+'"></span><div class="a-info">'+
-      '<div class="a-email">'+(u.email||'Unknown')+'</div>'+
-      '<div class="a-meta"><span class="ab '+pb+'">'+(u.plan||'free').toUpperCase()+'</span>'+
-      (u.role==='admin'?'<span class="ab ab-su">SUPER USER</span>':'')+
-      '<span class="a-txt">Uses:'+use+'</span>'+
-      (u.cancelled?'<span class="a-txt a-red">Cancelled</span>':'')+
-      (u.subscribed&&!u.cancelled?'<span class="a-txt a-grn">&#163;'+(pp[u.plan]||0).toFixed(2)+'/mo</span>':'')+
-      '</div></div></div>'+
-      '<button class="a-del" onclick="adminDeleteUser(\''+(u.id||u.email)+'\')">&#128465;</button></div>';
-  }).join('');
-  return '<div class="aw"><h2 class="at">ADMIN DASHBOARD</h2>'+
-    '<div class="a-stats">'+sc+'</div><div class="a-filters">'+fb+'</div>'+
-    '<div class="a-list">'+rows+'</div></div>';
+  var html = '<div class="page-header"><div class="page-title">ADMIN <span>DASHBOARD</span></div><div class="page-subtitle">stencillabadmin@gmail.com</div></div>';
+  html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">';
+  [['TOTAL',s.total,'var(--text)'],['ACTIVE',s.active,'var(--success)'],['TRIAL',s.trial,'var(--warning)'],['CANCELLED',s.cancelled,'var(--error)']].forEach(function(x){
+    html += '<div class="card"><div class="label">' + x[0] + '</div><div style="font-family:Bebas Neue,sans-serif;font-size:38px;color:' + x[2] + ';line-height:1;margin-top:4px">' + x[1] + '</div></div>';
+  });
+  html += '</div>';
+  html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">';
+  html += '<div style="font-family:Bebas Neue,sans-serif;font-size:18px;letter-spacing:3px">USERS</div>';
+  html += '<input id="admin-search" class="input" placeholder="Search..." value="' + (STATE.searchQuery||'') + '" style="width:220px;height:38px;padding:0 12px;font-size:13px"/>';
+  html += '</div>';
+  html += '<div class="card" style="padding:0;overflow:hidden"><table class="admin-table"><thead><tr>';
+  ['USER','PLAN','STATUS','ACTIONS'].forEach(function(h){ html += '<th>' + h + '</th>'; });
+  html += '</tr></thead><tbody>';
+  filtered.forEach(function(u){
+    html += '<tr>';
+    html += '<td><div style="font-weight:600">' + u.name + '</div><div style="font-size:11px;color:var(--text3)">' + u.email + '</div>' + (u.instagram?'<div style="font-size:11px;color:var(--text3)">@'+u.instagram.replace('@','')+'</div>':'') + (u.role==='super_admin'?'<span style="font-size:9px;color:#a78bfa;font-family:Bebas Neue,sans-serif">ADMIN</span>':'') + '</td>';
+    html += '<td><span style="font-family:Bebas Neue,sans-serif;font-size:10px;padding:3px 8px;border-radius:4px;background:rgba(230,57,70,.1);color:var(--accent)">' + (u.plan||'trial').toUpperCase().replace('_',' ') + '</span>' + (u.sponsored?'<br><span style="font-size:9px;color:var(--success);font-family:Bebas Neue,sans-serif">&#9733; SPONSORED</span>':'') + '</td>';
+    html += '<td><div style="display:flex;align-items:center;gap:5px"><div style="width:7px;height:7px;border-radius:50%;background:' + (u.active?'var(--success)':'var(--error)') + '"></div><span style="font-size:12px;color:' + (u.active?'var(--success)':'var(--error)') + '">' + (u.active?'Active':'Banned') + '</span></div></td>';
+    html += '<td><div style="display:flex;flex-direction:column;gap:3px">';
+    html += '<button class="admin-action-btn" data-action="free" data-uid="' + u.id + '" style="border-color:rgba(34,197,94,.3);color:var(--success)">' + (u.freeAccess?'REVOKE FREE':'FREE ACCESS') + '</button>';
+    html += '<button class="admin-action-btn" data-action="discount" data-uid="' + u.id + '" style="border-color:rgba(245,158,11,.3);color:var(--warning)">' + (u.discount>0?'REMOVE 15%':'15% SPONSOR') + '</button>';
+    html += '<button class="admin-action-btn" data-action="ban" data-uid="' + u.id + '" style="border-color:' + (u.active?'rgba(239,68,68,.3)':'rgba(34,197,94,.3)') + ';color:' + (u.active?'var(--error)':'var(--success)') + '">' + (u.active?'BAN':'RESTORE') + '</button>';
+    html += '</div></td></tr>';
+  });
+  html += '</tbody></table></div>';
+  return html;
 }
 
 function renderPaywall() {
@@ -1335,7 +1276,7 @@ function handleAuth() {
   STATE.user = {
     fname: isAdmin ? 'Studio' : (fname || email.split('@')[0]),
     lname: isAdmin ? 'Admin' : lname,
-    name:  isAdmin ? 'Super User' : ((fname+' '+lname).trim() || email.split('@')[0]),
+    name:  isAdmin ? 'Studio Admin' : ((fname+' '+lname).trim() || email.split('@')[0]),
     email: email,
     role:  isAdmin ? 'super_admin' : 'user',
     plan:  isAdmin ? 'sponsored' : 'free_trial',
@@ -1892,7 +1833,226 @@ function processStencilPipeline(imageData, w, h, mode) {
   return {pixels:out_img, edges:finalP};
 }
 
-function adjustIntensity() { /* post-processing removed */ }
+function adjustIntensity(val) {
+  val = parseFloat(val);
+  STATE.stencilSettings.lineIntensity = val;
+  var el = document.getElementById('intensity-val');
+  if (el) el.textContent = Math.round(val*100) + '%';
+  if (!STATE.stencilEdges) return;
+
+  var canvas = document.getElementById('stencilCanvas');
+  var ctx = canvas.getContext('2d');
+  var w=canvas.width, h=canvas.height;
+  var coarse = STATE.stencilEdges;
+  var fine   = STATE.stencilFine   || new Uint8Array(w*h);
+  var tonal  = STATE.stencilTonal  || new Uint8Array(w*h);
+  var mode   = STATE.stencilMode   || 'moderate';
+  var opacity = 0.2 + 0.8 * Math.pow(val, 0.5);
+  var out = new ImageData(w, h);
+
+  for (var i=0;i<w*h;i++) {
+    var weight = 0;
+    if (coarse[i]===255) weight=1.0;
+    else if (coarse[i]===128) weight=0.75;
+    else if (fine[i]===255)   weight=0.55;
+    else if (fine[i]===128)   weight=0.38;
+    else if (tonal[i]>0)      weight=0.25;
+    if (weight===0){
+      out.data[i*4]=255;out.data[i*4+1]=255;out.data[i*4+2]=255;out.data[i*4+3]=255;
+    } else {
+      var alpha=Math.min(1,weight*opacity*1.3);
+      var v=Math.round(255*(1-alpha));
+      v=Math.min(v,mode==='simple'?60:mode==='moderate'?40:20);
+      out.data[i*4]=v;out.data[i*4+1]=v;out.data[i*4+2]=v;out.data[i*4+3]=255;
+    }
+  }
+  ctx.putImageData(out,0,0);
+  STATE.stencilOutput=canvas.toDataURL('image/png');
+  var img=document.getElementById('stencil-result');
+  if(img) img.src=STATE.stencilOutput;
+}
+
+async function generateImage(){
+  var promptEl=document.getElementById('gen-prompt');
+  var userPrompt=(promptEl?promptEl.value:STATE.genPrompt).trim();
+  if(!userPrompt){showToast('Enter a description first','error');return;}
+  STATE.genPrompt=userPrompt;STATE.genLoading=true;STATE.genOutput=null;render();
+  try{
+    var palette=STATE.genPalette||'bw';
+    var hasRep=STATE.replicateKey&&STATE.replicateKey.length>10&&!STATE.replicateKey.includes('PASTE');
+    if(hasRep){
+      var output;
+      var fullPrompt='';
+      if(palette==='bw'){
+        fullPrompt='ultra photorealistic black and white photograph of '+userPrompt+', professional studio photography, dramatic Rembrandt lighting, razor-sharp focus, rich tonal range, fine skin texture and detail, shot on Hasselblad, 85mm lens, tattoo artist reference, white seamless background, 8K, no watermark, no illustration, no drawing';
+        output=await callReplicate('black-forest-labs/flux-1.1-pro-ultra',{prompt:fullPrompt,aspect_ratio:'1:1',output_format:'png',output_quality:100,raw:true,safety_tolerance:6});
+      }else{
+        fullPrompt='ultra photorealistic full colour photograph of '+userPrompt+', professional studio photography, cinematic lighting, razor-sharp focus, vibrant true-to-life colours, fine skin texture and detail, shot on Hasselblad, 85mm lens, tattoo artist reference, white seamless background, 8K, no watermark, no illustration, no drawing';
+        output=await callReplicate('black-forest-labs/flux-1.1-pro-ultra',{prompt:fullPrompt,aspect_ratio:'1:1',output_format:'png',output_quality:100,raw:true,safety_tolerance:6});
+      }
+      STATE.genOutput=Array.isArray(output)?output[0]:output;
+    }else if(STATE.apiKey&&STATE.apiKey.length>10){
+      await generateWithClaude(userPrompt,palette);return;
+    }else{
+      throw new Error('Add a Replicate key in Settings to generate images');
+    }
+    STATE.genLoading=false;render();showToast('Image generated!','success');
+  }catch(err){STATE.genLoading=false;render();showToast('Error: '+err.message,'error');}
+}
+
+async function generateWithClaude(userPrompt, palette) {
+  if (!STATE.apiKey || STATE.apiKey.length < 10) {
+    throw new Error('Add an Anthropic API key in Settings, or add a Replicate key for FLUX image generation');
+  }
+  var colourNote = palette === 'bw'
+    ? 'STRICT MONOCHROME: use only blacks, greys, and white. No colour at all. Maximum cinematic contrast.'
+    : 'VIVID FULL COLOUR: rich saturated photorealistic colours, cinematic lighting.';
+  var raw = await callClaude([{
+    role: 'user',
+    content: 'Create a stunning SVG tattoo artwork (viewBox="0 0 1024 1024") of: ' + userPrompt + '. ' + colourNote + '. Use gradients for depth. 20+ gradient definitions. 80+ layered elements. Dramatic Rembrandt lighting. White background. Respond with ONLY the SVG — start <svg end </svg>.'
+  }], 4096);
+  var start = raw.indexOf('<svg'), end = raw.lastIndexOf('<\/svg>');
+  if (start===-1||end===-1) throw new Error('No image returned — try again');
+  var blob = new Blob([raw.slice(start,end+6)], {type:'image/svg+xml'});
+  var url = URL.createObjectURL(blob);
+  var img = new Image();
+  await new Promise(function(res,rej){img.onload=res;img.onerror=rej;img.src=url;});
+  var cv=document.getElementById('stencilCanvas');
+  cv.width=1024;cv.height=1024;
+  var ctx=cv.getContext('2d');
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,1024,1024);
+  ctx.drawImage(img,0,0,1024,1024);
+  URL.revokeObjectURL(url);
+  STATE.genOutput=cv.toDataURL('image/png');
+  STATE.genLoading=false;
+  render();
+  showToast('Image generated!', 'success');
+}
+
+async function enhancePhoto(){
+  if(!STATE.enhanceInput||STATE.enhanceLoading) return;
+  STATE.enhanceLoading=true;render();
+  try{
+    var hasRep=STATE.replicateKey&&STATE.replicateKey.length>10&&!STATE.replicateKey.includes('PASTE');
+    if(hasRep){
+      var ib=await imageToBase64(STATE.enhanceInput);
+      var output=await callReplicate(
+        'nightmareai/real-esrgan:f121d640bd286e1fdc67f9799164c1d5be36ff74576ee2d96b07c4b1b5af8a6',
+        {image:'data:'+ib.mime+';base64,'+ib.b64,scale:4,face_enhance:true}
+      );
+      STATE.enhanceOutput=Array.isArray(output)?output[0]:output;
+    } else {
+      await enhanceWithCanvas();
+    }
+    STATE.enhanceLoading=false;STATE.baPosition=0.5;render();showToast('Photo enhanced!','success');
+  }catch(err){STATE.enhanceLoading=false;render();showToast('Error: '+err.message,'error');}
+}
+
+async function enhanceWithCanvas() {
+  var img = new Image();
+  await new Promise(function(res, rej) { img.onload = res; img.onerror = rej; img.src = STATE.enhanceInput; });
+
+  // Work at 2x the original size (upscale via bilinear canvas)
+  var W = Math.min(img.width * 2, 2048);
+  var H = Math.min(img.height * 2, 2048);
+
+  var cv = document.getElementById('stencilCanvas');
+  cv.width = W; cv.height = H;
+  var ctx = cv.getContext('2d');
+
+  // Step 1: Draw upscaled with smoothing (bilinear)
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(img, 0, 0, W, H);
+  var d = ctx.getImageData(0, 0, W, H);
+  var data = d.data;
+  var N = W * H;
+
+  // Step 2: Unsharp mask — sharpen details
+  // Blur the image, then add (original - blurred) * amount back
+  function gaussBlurRGBA(src, w, h, sig) {
+    var r = Math.ceil(sig * 2.5), sz = r*2+1;
+    var k = new Float32Array(sz), ks = 0;
+    for (var j = 0; j < sz; j++) { k[j] = Math.exp(-(j-r)*(j-r)/(2*sig*sig)); ks += k[j]; }
+    for (var j = 0; j < sz; j++) k[j] /= ks;
+    var tmp = new Float32Array(w*h*4), out = new Float32Array(w*h*4);
+    for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) for (var c = 0; c < 3; c++) {
+      var v = 0, ws = 0;
+      for (var j = 0; j < sz; j++) {
+        var xx = x+j-r; if (xx < 0 || xx >= w) continue;
+        v += src[(y*w+xx)*4+c] * k[j]; ws += k[j];
+      }
+      tmp[(y*w+x)*4+c] = v/ws;
+    }
+    for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) for (var c = 0; c < 3; c++) {
+      var v = 0, ws = 0;
+      for (var j = 0; j < sz; j++) {
+        var yy = y+j-r; if (yy < 0 || yy >= h) continue;
+        v += tmp[(yy*w+x)*4+c] * k[j]; ws += k[j];
+      }
+      out[(y*w+x)*4+c] = v/ws;
+    }
+    return out;
+  }
+
+  var blurred = gaussBlurRGBA(data, W, H, 1.2);
+  var amount = 1.4; // sharpening strength
+
+  // Step 3: CLAHE-lite — local contrast enhancement per 64px tile
+  var tileSize = 64;
+  var enhanced = new Uint8ClampedArray(data.length);
+
+  for (var i = 0; i < N; i++) {
+    for (var c = 0; c < 3; c++) {
+      // Unsharp: original + amount*(original - blurred)
+      var sharpened = data[i*4+c] + amount * (data[i*4+c] - blurred[i*4+c]);
+      enhanced[i*4+c] = Math.max(0, Math.min(255, sharpened));
+    }
+    enhanced[i*4+3] = 255;
+  }
+
+  // Local contrast boost per tile
+  for (var ty = 0; ty < H; ty += tileSize) for (var tx = 0; tx < W; tx += tileSize) {
+    var sum = 0, cnt = 0;
+    for (var dy = 0; dy < tileSize && ty+dy < H; dy++) for (var dx = 0; dx < tileSize && tx+dx < W; dx++) {
+      var idx = ((ty+dy)*W+(tx+dx))*4;
+      sum += 0.2126*enhanced[idx] + 0.7152*enhanced[idx+1] + 0.0722*enhanced[idx+2];
+      cnt++;
+    }
+    var mean = sum/cnt;
+    var contrastFactor = 1.15;
+    for (var dy = 0; dy < tileSize && ty+dy < H; dy++) for (var dx = 0; dx < tileSize && tx+dx < W; dx++) {
+      var idx = ((ty+dy)*W+(tx+dx))*4;
+      for (var c = 0; c < 3; c++) {
+        enhanced[idx+c] = Math.max(0, Math.min(255, mean + contrastFactor*(enhanced[idx+c] - mean)));
+      }
+    }
+  }
+
+  // Step 4: Saturation boost (convert to HSL, boost S)
+  for (var i = 0; i < N; i++) {
+    var ri = enhanced[i*4]/255, gi = enhanced[i*4+1]/255, bi2 = enhanced[i*4+2]/255;
+    var max = Math.max(ri,gi,bi2), min = Math.min(ri,gi,bi2);
+    var l = (max+min)/2;
+    if (max !== min) {
+      var s = l > 0.5 ? (max-min)/(2-max-min) : (max-min)/(max+min);
+      s = Math.min(1, s * 1.2); // boost saturation 20%
+      var q = l < 0.5 ? l*(1+s) : l+s-l*s;
+      var p = 2*l-q;
+      var h = max===ri ? (gi-bi2)/(max-min)/6 : max===gi ? (bi2-ri)/(max-min)/6+1/3 : (ri-gi)/(max-min)/6+2/3;
+      h = (h+1)%1;
+      function hue2rgb(p,q,t){t=(t+1)%1;return t<1/6?p+(q-p)*6*t:t<1/2?q:t<2/3?p+(q-p)*(2/3-t)*6:p;}
+      enhanced[i*4]   = Math.round(hue2rgb(p,q,h+1/3)*255);
+      enhanced[i*4+1] = Math.round(hue2rgb(p,q,h)*255);
+      enhanced[i*4+2] = Math.round(hue2rgb(p,q,h-1/3)*255);
+    }
+  }
+
+  var outData = new ImageData(enhanced, W, H);
+  cv.width = W; cv.height = H;
+  ctx.putImageData(outData, 0, 0);
+  STATE.enhanceOutput = cv.toDataURL('image/jpeg', 0.95);
+}
 
 function handleStencilUpload(input) {
   var file = input.files[0];
@@ -2027,50 +2187,7 @@ function doLogout() {
 }
 
 // ── ATTACH EVENTS ────────────────────────────────────────────────────────────
-
-function adminDeleteUser(uid) {
-  if (!confirm('Delete this account permanently?')) return;
-  STATE.users = (STATE.users||[]).filter(function(u){ return (u.id||u.email) !== uid; });
-  render(); showToast('Account deleted', 'success');
-}
-function deleteMyAccount() {
-  if (!confirm('Delete your account permanently? All data will be lost.')) return;
-  STATE.user = null; STATE.page = 'auth'; render();
-  showToast('Account deleted', 'success');
-}
-
-
-function wireStencilSliders() {
-  // No sliders — removed for clean stencil output
-}
-
 function attachEvents() {
-  // Wire new stencil UI controls
-  wireStencilSliders();
-  var genBtn = document.getElementById('gen-btn');
-  if (genBtn) genBtn.onclick = function(){ generateStencil(); };
-  var newBtn = document.getElementById('new-stencil-btn');
-  if (newBtn) newBtn.onclick = function(){
-    STATE.stencilInput=null;STATE.stencilOutput=null;STATE.stencilRawOutput=null;
-    render();
-  };
-  var fileInput = document.getElementById('stencil-file');
-  if (fileInput) fileInput.onchange = function(e){
-    var f=e.target.files[0];if(!f)return;
-    STATE.stencilOutput=null;STATE.stencilRawOutput=null;
-    STATE.stencilInput=URL.createObjectURL(f);render();
-  };
-  var dropZone = document.getElementById('stencil-drop');
-  if (dropZone) {
-    dropZone.ondragover=function(e){e.preventDefault();};
-    dropZone.ondrop=function(e){
-      e.preventDefault();
-      var f=e.dataTransfer.files[0];if(!f)return;
-      STATE.stencilInput=URL.createObjectURL(f);
-      STATE.stencilOutput=null;STATE.stencilRawOutput=null;render();
-    };
-  }
-
   // Nav
   document.querySelectorAll('[data-nav]').forEach(function(el){
     el.addEventListener('click', function(){ STATE.page=el.dataset.nav; render(); });
