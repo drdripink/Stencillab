@@ -1567,6 +1567,35 @@ async function generateStencil(){
         var sw=Math.round(img.width*scale),sh=Math.round(img.height*scale);
         sx.drawImage(img,Math.round((S-sw)/2),Math.round((S-sh)/2),sw,sh);
         var srcDataUrl=src.toDataURL('image/png');
+        // Pre-process: convert to pencil sketch so nano-banana gets line data
+        var sketchCanvas=document.createElement('canvas');sketchCanvas.width=sketchCanvas.height=S;
+        var skCtx=sketchCanvas.getContext('2d');
+        // Step 1: grayscale
+        skCtx.drawImage(img,Math.round((S-sw)/2),Math.round((S-sh)/2),sw,sh);
+        var gd=skCtx.getImageData(0,0,S,S);var gp=gd.data;
+        for(var gi=0;gi<gp.length;gi+=4){var gv=0.299*gp[gi]+0.587*gp[gi+1]+0.114*gp[gi+2];gp[gi]=gp[gi+1]=gp[gi+2]=gv;}
+        skCtx.putImageData(gd,0,0);
+        // Step 2: invert
+        var inv=document.createElement('canvas');inv.width=inv.height=S;
+        var invCtx=inv.getContext('2d');
+        invCtx.filter='invert(1)';invCtx.drawImage(sketchCanvas,0,0);
+        // Step 3: blur the inverted
+        var blurCanvas=document.createElement('canvas');blurCanvas.width=blurCanvas.height=S;
+        var blurCtx=blurCanvas.getContext('2d');
+        blurCtx.filter='blur(4px)';blurCtx.drawImage(inv,0,0);
+        // Step 4: color dodge blend = pencil sketch
+        var finalSketch=document.createElement('canvas');finalSketch.width=finalSketch.height=S;
+        var fsCtx=finalSketch.getContext('2d');
+        fsCtx.fillStyle='#fff';fsCtx.fillRect(0,0,S,S);
+        fsCtx.drawImage(sketchCanvas,0,0);
+        fsCtx.globalCompositeOperation='color-dodge';
+        fsCtx.drawImage(blurCanvas,0,0);
+        fsCtx.globalCompositeOperation='source-over';
+        // Step 5: boost contrast on sketch for cleaner lines
+        var sd=fsCtx.getImageData(0,0,S,S);var sp=sd.data;
+        for(var si=0;si<sp.length;si+=4){var sv=sp[si];var sc2=Math.min(255,Math.max(0,((sv-128)*2.5)+128));sp[si]=sp[si+1]=sp[si+2]=sc2;sp[si+3]=255;}
+        fsCtx.putImageData(sd,0,0);
+        var srcDataUrl=finalSketch.toDataURL('image/png');
 
         var output=await callReplicate('google/nano-banana-2',{
           prompt:stencilPrompt,
