@@ -1495,7 +1495,7 @@ async function generateStencil(){
     if(hasRep){
       try{
         // Prepare source image as data URL (1024x1024 with white pad) for Nano Banana
-        var srcDataUrl=canvas.toDataURL('image/png');
+        var srcDataUrl=canvas.toDataURL('image/jpeg',0.85);// compressed for API
         // Mode-specific line art prompts for google/nano-banana-2
         var bananaPrompts={
           simple:'Convert this photograph into a clean tattoo stencil line drawing. Pure black continuous outlines on pure white background. Bold confident single-weight lines tracing only the main contours and key features. Remove all shading, gradients, color, grey tones, and fills. The result must look like a printable tattoo stencil — crisp vector-style line art, nothing else. No watermark, no text, no signature.',
