@@ -670,7 +670,7 @@ input[type=range]::-webkit-slider-thumb{
 .del-my-btn{background:transparent;border:1px solid #f87171;color:#f87171;padding:12px 20px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;letter-spacing:1px;width:100%;margin-top:24px;transition:all .2s}
 .del-my-btn:hover{background:rgba(239,68,68,.1)}
 
-.create-stencil-btn{width:100%;padding:18px;background:var(--neon);color:var(--bg);font-family:var(--font-heading);font-size:16px;font-weight:700;letter-spacing:3px;border:none;border-radius:10px;cursor:pointer;margin-top:16px;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:10px}
+.create-stencil-btn{width:100%;padding:22px;background:var(--neon);color:#000;font-family:var(--font-heading);font-size:18px;font-weight:900;letter-spacing:4px;border:none;border-radius:10px;cursor:pointer;margin-top:14px;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 4px 24px rgba(255,255,255,.15)}
 .create-stencil-btn:hover:not(:disabled){background:var(--white);transform:translateY(-2px)}
 .create-stencil-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
 .create-stencil-btn.loading{background:var(--surface3);color:var(--grey-light)}
@@ -696,14 +696,14 @@ input[type=range]::-webkit-slider-thumb{
 .stencil-wrap{max-width:1200px}
 .stencil-layout{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:16px}
 .stencil-left,.stencil-right{display:flex;flex-direction:column}
-.upload-zone{display:block;width:100%;border:2px dashed var(--border);border-radius:12px;cursor:pointer;overflow:hidden;transition:border-color .2s}
+.upload-zone{display:block;width:100%;border:2px dashed var(--border);border-radius:12px;cursor:pointer;overflow:hidden;transition:border-color .2s;height:220px}
 .upload-zone:hover{border-color:var(--neon)}
-.upload-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;height:260px;gap:12px}
+.upload-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;height:220px;gap:12px}
 .upload-icon{font-size:28px;color:var(--grey)}
 .upload-text{font-family:var(--font-heading);font-size:13px;letter-spacing:2px;color:var(--grey-light)}
 .upload-sub{font-size:10px;color:var(--grey);letter-spacing:1px}
-.upload-preview{width:100%;height:260px;object-fit:cover;display:block}
-.output-placeholder{border:1px dashed var(--border);border-radius:12px;display:flex;align-items:center;justify-content:center;height:260px;flex:1}
+.upload-preview{width:100%;height:220px;object-fit:cover;display:block}
+.output-placeholder{border:1px dashed var(--border);border-radius:12px;display:flex;align-items:center;justify-content:center;height:220px}
 .output-placeholder-text{font-family:var(--font-heading);font-size:11px;letter-spacing:2px;color:var(--grey)}
 .section-label{font-size:10px;letter-spacing:3px;color:var(--grey);text-transform:uppercase;margin-bottom:10px}
 @media(max-width:768px){.stencil-layout{grid-template-columns:1fr}}
@@ -715,7 +715,7 @@ input[type=range]::-webkit-slider-thumb{
 <script>
 
 var STATE = {
-  stencilDetail: 80,
+  stencilDetail: 85,
   stencilThickness: 50,
   stencilRawOutput: null,
   adminFilter: 'all',
@@ -1569,7 +1569,7 @@ async function generateStencil(){
 
     var result=null;
     // Always use expert-level prompt
-    var expertPrompt='Extract every fine detail and line from this image as a professional tattoo stencil. Trace exactly what is shown with maximum detail. Pure black linework on pure white background. Do NOT add any new elements whatsoever.';
+    var expertPrompt='Convert this image into a professional tattoo stencil line drawing. Extract all lines, contours, hair strands, facial features, shadows and fine details as clean black linework on a pure white background. Maintain the exact composition and all elements present in the original image. Produce thin precise black outlines suitable for tattooing. Do not add new elements.';
 
     if(hasRep){
       try{
