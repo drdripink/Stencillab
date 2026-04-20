@@ -669,6 +669,29 @@ input[type=range]::-webkit-slider-thumb{
 .a-empty{color:var(--grey);font-size:13px;padding:40px;text-align:center}
 .del-my-btn{background:transparent;border:1px solid #f87171;color:#f87171;padding:12px 20px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;letter-spacing:1px;width:100%;margin-top:24px;transition:all .2s}
 .del-my-btn:hover{background:rgba(239,68,68,.1)}
+
+.create-stencil-btn{width:100%;padding:18px;background:var(--neon);color:var(--bg);font-family:var(--font-heading);font-size:16px;font-weight:700;letter-spacing:3px;border:none;border-radius:10px;cursor:pointer;margin-top:16px;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:10px}
+.create-stencil-btn:hover:not(:disabled){background:var(--white);transform:translateY(-2px)}
+.create-stencil-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.create-stencil-btn.loading{background:var(--surface3);color:var(--grey-light)}
+.stencil-sliders{margin-top:16px;display:flex;flex-direction:column;gap:16px}
+.slider-row{display:flex;flex-direction:column;gap:6px}
+.slider-label-row{display:flex;justify-content:space-between;align-items:center}
+.slider-label{font-family:var(--font-heading);font-size:11px;letter-spacing:2px;color:var(--white-dim)}
+.slider-value{font-family:var(--font-heading);font-size:13px;font-weight:700;color:var(--neon)}
+.slider-track-row{display:flex;align-items:center;gap:10px}
+.slider-hint-left,.slider-hint-right{font-size:10px;color:var(--grey);letter-spacing:1px;text-transform:uppercase;white-space:nowrap;min-width:36px}
+.slider-hint-right{text-align:right}
+.stencil-slider{flex:1;-webkit-appearance:none;height:4px;border-radius:2px;background:linear-gradient(to right,var(--neon) 0%,var(--neon) 80%,var(--border) 80%,var(--border) 100%);outline:none;cursor:pointer}
+.stencil-slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--white);border:3px solid var(--neon);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.stencil-slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--white);border:3px solid var(--neon);cursor:pointer}
+.output-actions{display:flex;gap:10px;margin-top:12px}
+.dl-btn{flex:1;padding:12px;background:var(--surface2);border:1px solid var(--border);color:var(--white-dim);font-family:var(--font-heading);font-size:13px;letter-spacing:2px;text-decoration:none;border-radius:8px;text-align:center;transition:all .2s}
+.dl-btn:hover{border-color:var(--neon);color:var(--neon)}
+.new-btn{padding:12px 20px;background:transparent;border:1px solid var(--border);color:var(--grey-light);font-family:var(--font-heading);font-size:13px;letter-spacing:2px;border-radius:8px;cursor:pointer;transition:all .2s}
+.new-btn:hover{border-color:var(--white);color:var(--white)}
+.stencil-output-img{width:100%;border-radius:8px;background:#fff}
+.output-image-wrap{background:#fff;border-radius:10px;overflow:hidden;border:1px solid var(--border)}
 </style>
 </head>
 <body>
@@ -677,6 +700,9 @@ input[type=range]::-webkit-slider-thumb{
 <script>
 
 var STATE = {
+  stencilDetail: 80,
+  stencilThickness: 50,
+  stencilRawOutput: null,
   adminFilter: 'all',
   page: 'auth',
   authMode: 'login',
@@ -1042,82 +1068,61 @@ function renderProfile() {
 
 // ── STENCIL ─────────────────────────────────────────────────────────────────
 function renderStencil() {
-  var s = STATE.stencilSettings;
-  var modes = [
-    {id:'simple',   label:'SIMPLE',   tag:'CLEAN LINES',  desc:'Bold outlines only — easiest to trace',       cls:'active-simple',   color:'var(--success)'},
-    {id:'moderate', label:'MODERATE', tag:'BALANCED',      desc:'Main lines plus shadow boundaries',            cls:'active-moderate', color:'var(--warning)'},
-    {id:'expert',   label:'EXPERT',   tag:'FULL DETAIL',   desc:'All detail, blend zones, complete tonal map',  cls:'active-expert',   color:'var(--accent)'}
-  ];
-  var html = '<div class="page-header"><div class="page-title">STENCIL <span>GENERATOR</span></div>';
-  html += '<div class="page-subtitle">Professional AI-powered tattoo stencils &bull; ' + (STATE.replicateKey && STATE.replicateKey.length>10 && !STATE.replicateKey.includes('PASTE') ? '<span style="color:#aaa">&#9679; ControlNet AI active</span>' : '<span style="color:#555">&#9679; Add API key in Settings</span>') + '</div></div>';
-  html += '<div class="grid-2">';
-
-  // Left
-  html += '<div>';
-  html += '<label class="label">UPLOAD REFERENCE PHOTO</label>';
-  html += '<div class="upload-zone' + (STATE.stencilInput?' has-image':'') + '" id="stencil-upload" style="height:210px">';
-  if (STATE.stencilInput) {
-    html += '<img src="' + STATE.stencilInput + '" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;border-radius:var(--radius2)"/>';
-    html += '<div class="upload-overlay"><button class="btn btn-outline btn-sm">CHANGE PHOTO</button></div>';
-  } else {
-    html += '<div style="display:flex;flex-direction:column;align-items:center;gap:10px">';
-    html += '<svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="var(--text3)" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>';
-    html += '<div style="font-family:Bebas Neue,sans-serif;font-size:14px;letter-spacing:3px;color:var(--text3)">TAP TO UPLOAD</div>';
-    html += '<div style="font-size:11px;color:var(--text3)">JPG &middot; PNG &middot; WebP</div></div>';
-  }
-  html += '</div>';
-  html += '<input type="file" id="stencil-file" accept="image/*" style="display:none"/>';
-
-  html += '<label class="label" style="margin-top:18px">STENCIL TYPE</label>';
-  modes.forEach(function(m) {
-    var active = s.level === m.id;
-    html += '<div class="mode-card' + (active?' '+m.cls:'') + '" data-level="' + m.id + '">';
-    html += '<div class="mode-radio" style="border-color:' + (active?m.color:'var(--border2)') + ';background:' + (active?m.color:'transparent') + '">';
-    if(active) html += '<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4"><polyline points="20 6 9 17 4 12"/></svg>';
-    html += '</div><div>';
-    html += '<div style="display:flex;align-items:center;gap:8px">';
-    html += '<span style="font-family:Bebas Neue,sans-serif;font-size:15px;letter-spacing:2px;color:' + (active?m.color:'var(--text)') + '">' + m.label + '</span>';
-    html += '<span style="font-family:Bebas Neue,sans-serif;font-size:9px;padding:2px 7px;border-radius:3px;background:' + (active?m.color:'var(--surface3)') + ';color:' + (active?'#fff':'var(--text3)') + '">' + m.tag + '</span>';
-    html += '</div><div style="font-size:11px;color:var(--text3);margin-top:2px">' + m.desc + '</div></div></div>';
-  });
-
-  html += '<button id="btn-generate-stencil" ' + ((!STATE.stencilInput||STATE.stencilLoading)?'disabled':'') + ' style="width:100%;height:54px;border-radius:var(--radius);border:none;cursor:pointer;background:linear-gradient(135deg,var(--accent),var(--accent2));font-family:Bebas Neue,sans-serif;font-size:19px;letter-spacing:3px;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 16px rgba(255,255,255,.1);' + ((!STATE.stencilInput||STATE.stencilLoading)?'opacity:.4;cursor:not-allowed;box-shadow:none':'') + '">';
-  html += STATE.stencilLoading ? '<span class="spinner"></span> PROCESSING...' : 'GENERATE STENCIL';
-  html += '</button></div>';
-
-  // Right
-  html += '<div><label class="label">OUTPUT</label>';
-  if (STATE.stencilOutput) {
-    html += '<div style="background:#fff;border-radius:var(--radius2);overflow:hidden;border:1px solid var(--border);box-shadow:0 4px 24px rgba(0,0,0,.4)">';
-    html += '<div class="ba-wrap" id="ba-wrap" style="height:310px">';
-    html += '<div class="ba-before"><img src="' + STATE.stencilInput + '" style="width:100%;height:310px;object-fit:cover"/></div>';
-    html += '<div class="ba-after" style="width:' + (STATE.baPosition*100) + '%"><img src="' + STATE.stencilOutput + '" style="position:absolute;top:0;left:0;height:310px;width:' + (100/STATE.baPosition) + '%;max-width:none;object-fit:cover"/></div>';
-    html += '<div class="ba-divider" style="left:' + (STATE.baPosition*100) + '%"></div>';
-    html += '<div class="ba-handle" style="left:' + (STATE.baPosition*100) + '%"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#333" stroke-width="2.5"><polyline points="15 18 21 12 15 6"/><polyline points="9 6 3 12 9 18"/></svg></div>';
-    html += '<div class="ba-label" style="left:12px">BEFORE</div><div class="ba-label" style="right:12px">AFTER</div>';
-    html += '</div></div>';
-    html += '<div style="margin-top:14px;padding:16px 18px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius2)">';
-    html += '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">';
-    html += '<label class="label" style="margin:0">LINE INTENSITY</label>';
-    html += '<div id="intensity-val" style="font-family:Bebas Neue,sans-serif;font-size:22px;color:var(--accent)">' + Math.round(STATE.stencilSettings.lineIntensity*100) + '%</div>';
-    html += '</div><input type="range" id="intensity-slider" min="0" max="1" step="0.01" value="' + STATE.stencilSettings.lineIntensity + '" style="width:100%"/>';
-    html += '<div style="display:flex;justify-content:space-between;margin-top:6px"><span style="font-size:10px;color:var(--text3)">Light</span><span style="font-size:10px;color:var(--text3)">Bold</span></div>';
-    html += '</div>';
-    html += '<div style="display:flex;gap:8px;margin-top:12px">';
-    html += '<button id="btn-download-stencil" class="btn btn-primary" style="flex:1;height:44px">DOWNLOAD</button>';
-    html += '<button id="btn-new-stencil" class="btn btn-outline" style="flex:1;height:44px">NEW</button>';
-    html += '</div>';
-  } else {
-    html += '<div style="border:1.5px dashed var(--border2);border-radius:var(--radius2);height:340px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:var(--surface2)">';
-    html += '<svg width="52" height="52" fill="none" viewBox="0 0 24 24" stroke="var(--border2)" stroke-width="0.9"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>';
-    html += '<div style="font-family:Bebas Neue,sans-serif;font-size:16px;letter-spacing:3px;color:var(--text3)">STENCIL APPEARS HERE</div>';
-    html += '<div style="font-size:11px;color:var(--text3)">Upload a photo &bull; Select type &bull; Generate</div></div>';
-  }
-  html += '</div></div>';
-  return html;
+  var hasOutput = !!STATE.stencilOutput;
+  var detail = STATE.stencilDetail !== undefined ? STATE.stencilDetail : 80;
+  var thick = STATE.stencilThickness !== undefined ? STATE.stencilThickness : 50;
+  return '<div class="stencil-wrap">' +
+    '<div class="stencil-header">' +
+      '<h1 class="page-title">STENCIL GENERATOR</h1>' +
+      '<p class="page-sub">Professional AI-powered tattoo stencils &bull; <span class="ai-dot"></span> ' +
+        (STATE.replicateKey && STATE.replicateKey.trim().length >= 10 && STATE.replicateKey !== "PASTE_YOUR_REPLICATE_KEY_HERE" ? 'ControlNet AI active' :
+         STATE.apiKey && STATE.apiKey.trim().length > 10 && STATE.apiKey !== "PASTE_YOUR_ANTHROPIC_API_KEY_HERE" ? 'Claude AI active' : 'Add API key in Settings') +
+      '</span></p>' +
+    '</div>' +
+    '<div class="stencil-layout">' +
+      '<div class="stencil-left">' +
+        '<div class="section-label">UPLOAD REFERENCE PHOTO</div>' +
+        '<label class="upload-zone" id="stencil-drop">' +
+          (STATE.stencilInput ? '<img src="' + STATE.stencilInput + '" class="upload-preview" />' :
+            '<div class="upload-placeholder"><div class="upload-icon">&#8593;</div><div class="upload-text">TAP TO UPLOAD</div><div class="upload-sub">JPG &middot; PNG &middot; WebP</div></div>') +
+          '<input type="file" id="stencil-file" accept="image/*" style="display:none" />' +
+        '</label>' +
+        '<button class="create-stencil-btn' + (STATE.stencilLoading ? ' loading' : '') + '" id="gen-btn" ' + (!STATE.stencilInput || STATE.stencilLoading ? 'disabled' : '') + '>' +
+          (STATE.stencilLoading ? '<span class="spin">&#9696;</span> GENERATING...' : 'CREATE STENCIL') +
+        '</button>' +
+      '</div>' +
+      '<div class="stencil-right">' +
+        '<div class="section-label">OUTPUT</div>' +
+        (hasOutput ?
+          '<div class="output-image-wrap">' +
+            '<img src="' + STATE.stencilOutput + '" class="stencil-output-img" id="stencil-out-img" />' +
+          '</div>' :
+          '<div class="output-placeholder">' +
+            '<div class="output-placeholder-text">STENCIL APPEARS HERE</div>' +
+          '</div>') +
+        (hasOutput ? '<div class="stencil-sliders">' +
+          '<div class="slider-row">' +
+            '<div class="slider-label-row"><span class="slider-label">DETAIL</span><span class="slider-value">' + detail + '%</span></div>' +
+            '<div class="slider-track-row"><span class="slider-hint-left">Clean</span>' +
+              '<input type="range" class="stencil-slider" id="slider-detail" min="0" max="100" value="' + detail + '" />' +
+            '<span class="slider-hint-right">Expert</span></div>' +
+          '</div>' +
+          '<div class="slider-row">' +
+            '<div class="slider-label-row"><span class="slider-label">BOLDNESS</span><span class="slider-value">' + thick + '%</span></div>' +
+            '<div class="slider-track-row"><span class="slider-hint-left">Fine</span>' +
+              '<input type="range" class="stencil-slider" id="slider-thick" min="0" max="100" value="' + thick + '" />' +
+            '<span class="slider-hint-right">Bold</span></div>' +
+          '</div>' +
+          '<div class="output-actions">' +
+            '<a href="' + STATE.stencilOutput + '" download="stencil.png" class="dl-btn">&#8595; DOWNLOAD</a>' +
+            '<button class="new-btn" id="new-stencil-btn">NEW</button>' +
+          '</div>' +
+        '</div>' : '') +
+      '</div>' +
+    '</div>' +
+  '</div>';
 }
 
-// ── ENHANCE ─────────────────────────────────────────────────────────────────
 function renderEnhance() {
   var html = '<div class="page-header"><div class="page-title">PHOTO <span>ENHANCER</span></div>';
   html += '<div class="page-subtitle">AI restoration &amp; 4K upscaling</div></div>';
@@ -1538,23 +1543,21 @@ async function generateStencil(){
   if(!STATE.stencilInput||STATE.stencilLoading)return;
   STATE.stencilLoading=true;
   STATE.stencilOutput=null;
+  STATE.stencilRawOutput=null;
   render();
   try{
-    var mode=STATE.stencilSettings&&STATE.stencilSettings.level?STATE.stencilSettings.level:'SIMPLE';
     var repKey=STATE.replicateKey;
     var hasRep=repKey&&repKey.trim().length>=10&&repKey!=='PASTE_YOUR_REPLICATE_KEY_HERE';
     var apiKey=STATE.apiKey;
     var hasApi=apiKey&&apiKey.trim().length>10&&apiKey!=='PASTE_YOUR_ANTHROPIC_API_KEY_HERE';
-
-    if(!hasRep&&!hasApi){
-      throw new Error('No AI key configured — add your API key in Settings');
-    }
+    if(!hasRep&&!hasApi){ throw new Error('No AI key configured — add your API key in Settings'); }
 
     var result=null;
+    // Always use expert-level prompt
+    var expertPrompt='Extract every fine detail and line from this image as a professional tattoo stencil. Trace exactly what is shown with maximum detail. Pure black linework on pure white background. Do NOT add any new elements whatsoever.';
 
     if(hasRep){
       try{
-        // Load image onto 1024 white canvas for clean input
         var img=new Image();img.crossOrigin='anonymous';
         await new Promise(function(res,rej){img.onload=res;img.onerror=rej;img.src=STATE.stencilInput;});
         var S=1024;
@@ -1564,21 +1567,14 @@ async function generateStencil(){
         var sw=Math.round(img.width*scale),sh=Math.round(img.height*scale);
         sx.drawImage(img,Math.round((S-sw)/2),Math.round((S-sh)/2),sw,sh);
         var srcDataUrl=src.toDataURL('image/png');
-
-        var bananaPrompts={
-          SIMPLE:'Extract the outlines from this image as a tattoo stencil. Trace ONLY what exists in this exact image. Pure black lines on white. No new elements, no decorations, no frames, no text.',
-          MODERATE:'Extract all lines and edges from this image as a tattoo stencil. Faithfully trace every element that exists. Black lines on white only. Do NOT invent anything new.',
-          EXPERT:'Extract every fine detail and line from this image as a tattoo stencil. Trace exactly what is shown. Black linework on white. Do NOT add any new elements whatsoever.'
-        };
         var output=await callReplicate('google/nano-banana-2',{
-          prompt:bananaPrompts[mode]||bananaPrompts.SIMPLE,
-          image_input:[srcDataUrl],
-          output_format:'png',
-          aspect_ratio:'match_input_image'
+          prompt:expertPrompt,image_input:[srcDataUrl],output_format:'png',aspect_ratio:'match_input_image'
         });
         var rawUrl=Array.isArray(output)?output[0]:output;
-
-        // Threshold to pure black/white
+        STATE.stencilRawOutput=rawUrl;
+        // Apply initial processing at default detail/thickness
+        var detail=STATE.stencilDetail!==undefined?STATE.stencilDetail:80;
+        var thresh=Math.round(220-(detail/100)*160);
         var aiImg=new Image();aiImg.crossOrigin='anonymous';
         await new Promise(function(res,rej){aiImg.onload=res;aiImg.onerror=rej;aiImg.src=rawUrl;});
         var out=document.createElement('canvas');out.width=out.height=S;
@@ -1586,39 +1582,26 @@ async function generateStencil(){
         var os=Math.min(S/aiImg.width,S/aiImg.height);
         oc.drawImage(aiImg,Math.round((S-aiImg.width*os)/2),Math.round((S-aiImg.height*os)/2),Math.round(aiImg.width*os),Math.round(aiImg.height*os));
         var od=oc.getImageData(0,0,S,S);var opx=od.data;
-        var t=mode==='SIMPLE'?160:mode==='MODERATE'?128:100;
-        for(var i=0;i<opx.length;i+=4){var v=(0.299*opx[i]+0.587*opx[i+1]+0.114*opx[i+2])<t?0:255;opx[i]=opx[i+1]=opx[i+2]=v;opx[i+3]=255;}
+        for(var i=0;i<opx.length;i+=4){var v=(0.299*opx[i]+0.587*opx[i+1]+0.114*opx[i+2])<thresh?0:255;opx[i]=opx[i+1]=opx[i+2]=v;opx[i+3]=255;}
         oc.putImageData(od,0,0);
         result=out.toDataURL('image/png');
-      }catch(repErr){
-        if(hasApi){
-          showToast('Switching to Claude AI...','info');
-        }else{
-          throw repErr;
-        }
-      }
+      }catch(repErr){if(hasApi){showToast('Switching to Claude AI...','info');}else{throw repErr;}}
     }
 
     if(!result&&hasApi){
       var imgData=await imageToBase64(STATE.stencilInput);
       var mime=(imgData&&imgData.mime)?imgData.mime:'image/jpeg';
       var b64=(imgData&&imgData.b64)?imgData.b64:imgData;
-      var claudePrompts={
-        SIMPLE:'Trace this image as a SIMPLE tattoo stencil SVG. Major outlines only. Do NOT add anything new.',
-        MODERATE:'Trace this image as a MODERATE tattoo stencil SVG. Main lines and shadows. Do NOT add anything new.',
-        EXPERT:'Trace this image as an EXPERT tattoo stencil SVG. Every fine detail. Do NOT add anything new.'
-      };
       var msgs=[{role:'user',content:[
         {type:'image',source:{type:'base64',media_type:mime,data:b64}},
-        {type:'text',text:claudePrompts[mode]+' Reply with ONLY a complete SVG. viewBox="0 0 512 512", white background, black strokes only.'}
+        {type:'text',text:expertPrompt+' Reply with ONLY a complete SVG element. viewBox="0 0 512 512", white background, black strokes only.'}
       ]}];
       var resp=await callClaude(msgs,4000);
       var s=resp.indexOf('<svg'),e=resp.lastIndexOf('</svg>');
       if(s>=0&&e>s){
         result=URL.createObjectURL(new Blob([resp.slice(s,e+6)],{type:'image/svg+xml'}));
-      }else{
-        throw new Error('Generation failed — try again');
-      }
+        STATE.stencilRawOutput=result;
+      }else{throw new Error('Generation failed — try again');}
     }
 
     STATE.stencilOutput=result;
@@ -1917,225 +1900,50 @@ function processStencilPipeline(imageData, w, h, mode) {
   return {pixels:out_img, edges:finalP};
 }
 
-function adjustIntensity(val) {
-  val = parseFloat(val);
-  STATE.stencilSettings.lineIntensity = val;
-  var el = document.getElementById('intensity-val');
-  if (el) el.textContent = Math.round(val*100) + '%';
-  if (!STATE.stencilEdges) return;
-
-  var canvas = document.getElementById('stencilCanvas');
-  var ctx = canvas.getContext('2d');
-  var w=canvas.width, h=canvas.height;
-  var coarse = STATE.stencilEdges;
-  var fine   = STATE.stencilFine   || new Uint8Array(w*h);
-  var tonal  = STATE.stencilTonal  || new Uint8Array(w*h);
-  var mode   = STATE.stencilMode   || 'moderate';
-  var opacity = 0.2 + 0.8 * Math.pow(val, 0.5);
-  var out = new ImageData(w, h);
-
-  for (var i=0;i<w*h;i++) {
-    var weight = 0;
-    if (coarse[i]===255) weight=1.0;
-    else if (coarse[i]===128) weight=0.75;
-    else if (fine[i]===255)   weight=0.55;
-    else if (fine[i]===128)   weight=0.38;
-    else if (tonal[i]>0)      weight=0.25;
-    if (weight===0){
-      out.data[i*4]=255;out.data[i*4+1]=255;out.data[i*4+2]=255;out.data[i*4+3]=255;
-    } else {
-      var alpha=Math.min(1,weight*opacity*1.3);
-      var v=Math.round(255*(1-alpha));
-      v=Math.min(v,mode==='simple'?60:mode==='moderate'?40:20);
-      out.data[i*4]=v;out.data[i*4+1]=v;out.data[i*4+2]=v;out.data[i*4+3]=255;
-    }
-  }
-  ctx.putImageData(out,0,0);
-  STATE.stencilOutput=canvas.toDataURL('image/png');
-  var img=document.getElementById('stencil-result');
-  if(img) img.src=STATE.stencilOutput;
-}
-
-async function generateImage(){
-  var promptEl=document.getElementById('gen-prompt');
-  var userPrompt=(promptEl?promptEl.value:STATE.genPrompt).trim();
-  if(!userPrompt){showToast('Enter a description first','error');return;}
-  STATE.genPrompt=userPrompt;STATE.genLoading=true;STATE.genOutput=null;render();
-  try{
-    var palette=STATE.genPalette||'bw';
-    var hasRep=STATE.replicateKey&&STATE.replicateKey.length>10&&!STATE.replicateKey.includes('PASTE');
-    if(hasRep){
-      var output;
-      var fullPrompt='';
-      if(palette==='bw'){
-        fullPrompt='ultra photorealistic black and white photograph of '+userPrompt+', professional studio photography, dramatic Rembrandt lighting, razor-sharp focus, rich tonal range, fine skin texture and detail, shot on Hasselblad, 85mm lens, tattoo artist reference, white seamless background, 8K, no watermark, no illustration, no drawing';
-        output=await callReplicate('black-forest-labs/flux-1.1-pro-ultra',{prompt:fullPrompt,aspect_ratio:'1:1',output_format:'png',output_quality:100,raw:true,safety_tolerance:6});
-      }else{
-        fullPrompt='ultra photorealistic full colour photograph of '+userPrompt+', professional studio photography, cinematic lighting, razor-sharp focus, vibrant true-to-life colours, fine skin texture and detail, shot on Hasselblad, 85mm lens, tattoo artist reference, white seamless background, 8K, no watermark, no illustration, no drawing';
-        output=await callReplicate('black-forest-labs/flux-1.1-pro-ultra',{prompt:fullPrompt,aspect_ratio:'1:1',output_format:'png',output_quality:100,raw:true,safety_tolerance:6});
-      }
-      STATE.genOutput=Array.isArray(output)?output[0]:output;
-    }else if(STATE.apiKey&&STATE.apiKey.length>10){
-      await generateWithClaude(userPrompt,palette);return;
-    }else{
-      throw new Error('Add a Replicate key in Settings to generate images');
-    }
-    STATE.genLoading=false;render();showToast('Image generated!','success');
-  }catch(err){STATE.genLoading=false;render();showToast('Error: '+err.message,'error');}
-}
-
-async function generateWithClaude(userPrompt, palette) {
-  if (!STATE.apiKey || STATE.apiKey.length < 10) {
-    throw new Error('Add an Anthropic API key in Settings, or add a Replicate key for FLUX image generation');
-  }
-  var colourNote = palette === 'bw'
-    ? 'STRICT MONOCHROME: use only blacks, greys, and white. No colour at all. Maximum cinematic contrast.'
-    : 'VIVID FULL COLOUR: rich saturated photorealistic colours, cinematic lighting.';
-  var raw = await callClaude([{
-    role: 'user',
-    content: 'Create a stunning SVG tattoo artwork (viewBox="0 0 1024 1024") of: ' + userPrompt + '. ' + colourNote + '. Use gradients for depth. 20+ gradient definitions. 80+ layered elements. Dramatic Rembrandt lighting. White background. Respond with ONLY the SVG — start <svg end </svg>.'
-  }], 4096);
-  var start = raw.indexOf('<svg'), end = raw.lastIndexOf('<\/svg>');
-  if (start===-1||end===-1) throw new Error('No image returned — try again');
-  var blob = new Blob([raw.slice(start,end+6)], {type:'image/svg+xml'});
-  var url = URL.createObjectURL(blob);
+function adjustIntensity() {
+  if (!STATE.stencilRawOutput) return;
+  var detail = STATE.stencilDetail !== undefined ? STATE.stencilDetail : 80;
+  var thick = STATE.stencilThickness !== undefined ? STATE.stencilThickness : 50;
+  // Detail: high = low threshold (keep more lines). Range: 60 (max detail) to 220 (clean)
+  var thresh = Math.round(220 - (detail / 100) * 160);
   var img = new Image();
-  await new Promise(function(res,rej){img.onload=res;img.onerror=rej;img.src=url;});
-  var cv=document.getElementById('stencilCanvas');
-  cv.width=1024;cv.height=1024;
-  var ctx=cv.getContext('2d');
-  ctx.fillStyle='#fff';ctx.fillRect(0,0,1024,1024);
-  ctx.drawImage(img,0,0,1024,1024);
-  URL.revokeObjectURL(url);
-  STATE.genOutput=cv.toDataURL('image/png');
-  STATE.genLoading=false;
-  render();
-  showToast('Image generated!', 'success');
-}
-
-async function enhancePhoto(){
-  if(!STATE.enhanceInput||STATE.enhanceLoading) return;
-  STATE.enhanceLoading=true;render();
-  try{
-    var hasRep=STATE.replicateKey&&STATE.replicateKey.length>10&&!STATE.replicateKey.includes('PASTE');
-    if(hasRep){
-      var ib=await imageToBase64(STATE.enhanceInput);
-      var output=await callReplicate(
-        'nightmareai/real-esrgan:f121d640bd286e1fdc67f9799164c1d5be36ff74576ee2d96b07c4b1b5af8a6',
-        {image:'data:'+ib.mime+';base64,'+ib.b64,scale:4,face_enhance:true}
-      );
-      STATE.enhanceOutput=Array.isArray(output)?output[0]:output;
-    } else {
-      await enhanceWithCanvas();
+  img.crossOrigin = 'anonymous';
+  img.onload = function() {
+    var S = 1024;
+    var c = document.createElement('canvas'); c.width = c.height = S;
+    var ctx = c.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0,0,S,S);
+    var sc = Math.min(S/img.width, S/img.height);
+    var sw = Math.round(img.width*sc), sh = Math.round(img.height*sc);
+    ctx.drawImage(img, Math.round((S-sw)/2), Math.round((S-sh)/2), sw, sh);
+    var id = ctx.getImageData(0,0,S,S); var d = id.data;
+    // Apply threshold
+    for (var i=0;i<d.length;i+=4){
+      var lum = 0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];
+      var v = lum < thresh ? 0 : 255; d[i]=d[i+1]=d[i+2]=v; d[i+3]=255;
     }
-    STATE.enhanceLoading=false;STATE.baPosition=0.5;render();showToast('Photo enhanced!','success');
-  }catch(err){STATE.enhanceLoading=false;render();showToast('Error: '+err.message,'error');}
-}
-
-async function enhanceWithCanvas() {
-  var img = new Image();
-  await new Promise(function(res, rej) { img.onload = res; img.onerror = rej; img.src = STATE.enhanceInput; });
-
-  // Work at 2x the original size (upscale via bilinear canvas)
-  var W = Math.min(img.width * 2, 2048);
-  var H = Math.min(img.height * 2, 2048);
-
-  var cv = document.getElementById('stencilCanvas');
-  cv.width = W; cv.height = H;
-  var ctx = cv.getContext('2d');
-
-  // Step 1: Draw upscaled with smoothing (bilinear)
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(img, 0, 0, W, H);
-  var d = ctx.getImageData(0, 0, W, H);
-  var data = d.data;
-  var N = W * H;
-
-  // Step 2: Unsharp mask — sharpen details
-  // Blur the image, then add (original - blurred) * amount back
-  function gaussBlurRGBA(src, w, h, sig) {
-    var r = Math.ceil(sig * 2.5), sz = r*2+1;
-    var k = new Float32Array(sz), ks = 0;
-    for (var j = 0; j < sz; j++) { k[j] = Math.exp(-(j-r)*(j-r)/(2*sig*sig)); ks += k[j]; }
-    for (var j = 0; j < sz; j++) k[j] /= ks;
-    var tmp = new Float32Array(w*h*4), out = new Float32Array(w*h*4);
-    for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) for (var c = 0; c < 3; c++) {
-      var v = 0, ws = 0;
-      for (var j = 0; j < sz; j++) {
-        var xx = x+j-r; if (xx < 0 || xx >= w) continue;
-        v += src[(y*w+xx)*4+c] * k[j]; ws += k[j];
-      }
-      tmp[(y*w+x)*4+c] = v/ws;
-    }
-    for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) for (var c = 0; c < 3; c++) {
-      var v = 0, ws = 0;
-      for (var j = 0; j < sz; j++) {
-        var yy = y+j-r; if (yy < 0 || yy >= h) continue;
-        v += tmp[(yy*w+x)*4+c] * k[j]; ws += k[j];
-      }
-      out[(y*w+x)*4+c] = v/ws;
-    }
-    return out;
-  }
-
-  var blurred = gaussBlurRGBA(data, W, H, 1.2);
-  var amount = 1.4; // sharpening strength
-
-  // Step 3: CLAHE-lite — local contrast enhancement per 64px tile
-  var tileSize = 64;
-  var enhanced = new Uint8ClampedArray(data.length);
-
-  for (var i = 0; i < N; i++) {
-    for (var c = 0; c < 3; c++) {
-      // Unsharp: original + amount*(original - blurred)
-      var sharpened = data[i*4+c] + amount * (data[i*4+c] - blurred[i*4+c]);
-      enhanced[i*4+c] = Math.max(0, Math.min(255, sharpened));
-    }
-    enhanced[i*4+3] = 255;
-  }
-
-  // Local contrast boost per tile
-  for (var ty = 0; ty < H; ty += tileSize) for (var tx = 0; tx < W; tx += tileSize) {
-    var sum = 0, cnt = 0;
-    for (var dy = 0; dy < tileSize && ty+dy < H; dy++) for (var dx = 0; dx < tileSize && tx+dx < W; dx++) {
-      var idx = ((ty+dy)*W+(tx+dx))*4;
-      sum += 0.2126*enhanced[idx] + 0.7152*enhanced[idx+1] + 0.0722*enhanced[idx+2];
-      cnt++;
-    }
-    var mean = sum/cnt;
-    var contrastFactor = 1.15;
-    for (var dy = 0; dy < tileSize && ty+dy < H; dy++) for (var dx = 0; dx < tileSize && tx+dx < W; dx++) {
-      var idx = ((ty+dy)*W+(tx+dx))*4;
-      for (var c = 0; c < 3; c++) {
-        enhanced[idx+c] = Math.max(0, Math.min(255, mean + contrastFactor*(enhanced[idx+c] - mean)));
+    // Boldness: expand black pixels (dilation simulation via contrast boost)
+    if (thick > 50) {
+      var r = Math.round((thick-50)/50*2); // 0-2 pixel dilation radius
+      if (r > 0) {
+        var src2 = new Uint8ClampedArray(d);
+        for (var y=r;y<S-r;y++){for(var x=r;x<S-r;x++){
+          var base=(y*S+x)*4;
+          if(src2[base]===255){ // white pixel - check if any neighbour is black
+            var hasBlack=false;
+            for(var dy=-r;dy<=r&&!hasBlack;dy++){for(var dx=-r;dx<=r&&!hasBlack;dx++){
+              if(src2[((y+dy)*S+(x+dx))*4]===0) hasBlack=true;
+            }}
+            if(hasBlack){d[base]=d[base+1]=d[base+2]=0;}
+          }
+        }}
       }
     }
-  }
-
-  // Step 4: Saturation boost (convert to HSL, boost S)
-  for (var i = 0; i < N; i++) {
-    var ri = enhanced[i*4]/255, gi = enhanced[i*4+1]/255, bi2 = enhanced[i*4+2]/255;
-    var max = Math.max(ri,gi,bi2), min = Math.min(ri,gi,bi2);
-    var l = (max+min)/2;
-    if (max !== min) {
-      var s = l > 0.5 ? (max-min)/(2-max-min) : (max-min)/(max+min);
-      s = Math.min(1, s * 1.2); // boost saturation 20%
-      var q = l < 0.5 ? l*(1+s) : l+s-l*s;
-      var p = 2*l-q;
-      var h = max===ri ? (gi-bi2)/(max-min)/6 : max===gi ? (bi2-ri)/(max-min)/6+1/3 : (ri-gi)/(max-min)/6+2/3;
-      h = (h+1)%1;
-      function hue2rgb(p,q,t){t=(t+1)%1;return t<1/6?p+(q-p)*6*t:t<1/2?q:t<2/3?p+(q-p)*(2/3-t)*6:p;}
-      enhanced[i*4]   = Math.round(hue2rgb(p,q,h+1/3)*255);
-      enhanced[i*4+1] = Math.round(hue2rgb(p,q,h)*255);
-      enhanced[i*4+2] = Math.round(hue2rgb(p,q,h-1/3)*255);
-    }
-  }
-
-  var outData = new ImageData(enhanced, W, H);
-  cv.width = W; cv.height = H;
-  ctx.putImageData(outData, 0, 0);
-  STATE.enhanceOutput = cv.toDataURL('image/jpeg', 0.95);
+    ctx.putImageData(id,0,0);
+    STATE.stencilOutput = c.toDataURL('image/png');
+    render();
+  };
+  img.src = STATE.stencilRawOutput;
 }
 
 function handleStencilUpload(input) {
@@ -2283,7 +2091,61 @@ function deleteMyAccount() {
   showToast('Account deleted', 'success');
 }
 
+
+function wireStencilSliders() {
+  var dSlider = document.getElementById('slider-detail');
+  var tSlider = document.getElementById('slider-thick');
+  if (dSlider) {
+    dSlider.oninput = function() {
+      STATE.stencilDetail = parseInt(this.value);
+      // Update value display live
+      var lbl = this.closest('.slider-row').querySelector('.slider-value');
+      if (lbl) lbl.textContent = this.value + '%';
+      // Update gradient
+      this.style.background = 'linear-gradient(to right,var(--neon) 0%,var(--neon) ' + this.value + '%,var(--border) ' + this.value + '%,var(--border) 100%)';
+      clearTimeout(window.__sliderTimer);
+      window.__sliderTimer = setTimeout(function(){ adjustIntensity(); }, 300);
+    };
+  }
+  if (tSlider) {
+    tSlider.oninput = function() {
+      STATE.stencilThickness = parseInt(this.value);
+      var lbl = this.closest('.slider-row').querySelector('.slider-value');
+      if (lbl) lbl.textContent = this.value + '%';
+      this.style.background = 'linear-gradient(to right,var(--neon) 0%,var(--neon) ' + this.value + '%,var(--border) ' + this.value + '%,var(--border) 100%)';
+      clearTimeout(window.__sliderTimer);
+      window.__sliderTimer = setTimeout(function(){ adjustIntensity(); }, 300);
+    };
+  }
+}
+
 function attachEvents() {
+  // Wire new stencil UI controls
+  wireStencilSliders();
+  var genBtn = document.getElementById('gen-btn');
+  if (genBtn) genBtn.onclick = function(){ generateStencil(); };
+  var newBtn = document.getElementById('new-stencil-btn');
+  if (newBtn) newBtn.onclick = function(){
+    STATE.stencilInput=null;STATE.stencilOutput=null;STATE.stencilRawOutput=null;
+    render();
+  };
+  var fileInput = document.getElementById('stencil-file');
+  if (fileInput) fileInput.onchange = function(e){
+    var f=e.target.files[0];if(!f)return;
+    STATE.stencilOutput=null;STATE.stencilRawOutput=null;
+    STATE.stencilInput=URL.createObjectURL(f);render();
+  };
+  var dropZone = document.getElementById('stencil-drop');
+  if (dropZone) {
+    dropZone.ondragover=function(e){e.preventDefault();};
+    dropZone.ondrop=function(e){
+      e.preventDefault();
+      var f=e.dataTransfer.files[0];if(!f)return;
+      STATE.stencilInput=URL.createObjectURL(f);
+      STATE.stencilOutput=null;STATE.stencilRawOutput=null;render();
+    };
+  }
+
   // Nav
   document.querySelectorAll('[data-nav]').forEach(function(el){
     el.addEventListener('click', function(){ STATE.page=el.dataset.nav; render(); });
