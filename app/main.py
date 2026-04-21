@@ -107,3 +107,69 @@ async def generate_stencil(
 STATIC_DIR = Path(__file__).parent.parent / "static"
 if STATIC_DIR.exists():
     app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
+
+
+# --- Replicate proxy routes (legacy frontend compat) ---------------------
+import os as _os_proxy
+import httpx as _httpx_proxy
+from fastapi import Request as _Request_proxy
+from fastapi.responses import Response as _Response_proxy
+
+_REPLICATE_BASE = "https://api.replicate.com/v1"
+
+
+def _resolve_auth(request):
+    incoming = request.headers.get("authorization", "")
+    if incoming.lower().startswith("token ") or incoming.lower().startswith("bearer "):
+        return incoming
+    server_token = _os_proxy.environ.get("REPLICATE_API_TOKEN")
+    if server_token:
+        return f"Token {server_token}"
+    return None
+
+
+@app.post("/api/replicate/predictions")
+async def replicate_create_prediction(request: _Request_proxy):
+    auth = _resolve_auth(request)
+    if not auth:
+        return _Response_proxy(
+            content='{"detail":"No Replicate token available"}',
+            status_code=401,
+            media_type="application/json",
+        )
+    body = await request.body()
+    async with _httpx_proxy.AsyncClient(timeout=60.0) as client:
+        resp = await client.post(
+            f"{_REPLICATE_BASE}/predictions",
+            content=body,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": auth,
+            },
+        )
+    return _Response_proxy(
+        content=resp.content,
+        status_code=resp.status_code,
+        media_type=resp.headers.get("content-type", "application/json"),
+    )
+
+
+@app.get("/api/replicate/predictions/{prediction_id}")
+async def replicate_get_prediction(prediction_id: str, request: _Request_proxy):
+    auth = _resolve_auth(request)
+    if not auth:
+        return _Response_proxy(
+            content='{"detail":"No Replicate token available"}',
+            status_code=401,
+            media_type="application/json",
+        )
+    async with _httpx_proxy.AsyncClient(timeout=30.0) as client:
+        resp = await client.get(
+            f"{_REPLICATE_BASE}/predictions/{prediction_id}",
+            headers={"Authorization": auth},
+        )
+    return _Response_proxy(
+        content=resp.content,
+        status_code=resp.status_code,
+        media_type=resp.headers.get("content-type", "application/json"),
+    )
