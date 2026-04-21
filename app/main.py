@@ -27,7 +27,10 @@ app = FastAPI(title="StencilLab", version="1.0.0")
 # Tighten this in prod to your actual origins.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://stencillab-ns2ljw.fly.dev",
+        "https://stencillab.fly.dev",
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -54,6 +57,47 @@ from fastapi.responses import Response as _Response_proxy
 
 _REPLICATE_BASE = "https://api.replicate.com/v1"
 
+import time
+from collections import defaultdict, deque
+
+_ALLOWED_ORIGINS = {
+    "https://stencillab-ns2ljw.fly.dev",
+    "https://stencillab.fly.dev",
+}
+_RATE_WINDOW_SECS = 3600
+_RATE_MAX_POST = 60
+_RATE_MAX_GET = 1200
+_request_log = defaultdict(lambda: deque(maxlen=2000))
+
+
+def _check_origin_and_rate(request, is_post: bool):
+    origin = request.headers.get("origin", "")
+    referer = request.headers.get("referer", "")
+    origin_ok = (
+        origin in _ALLOWED_ORIGINS
+        or any(referer.startswith(o) for o in _ALLOWED_ORIGINS)
+    )
+    if not origin_ok:
+        return _Response_proxy(
+            content='{"detail":"Origin not allowed"}',
+            status_code=403,
+            media_type="application/json",
+        )
+    ip = request.headers.get("fly-client-ip") or (request.client.host if request.client else "unknown")
+    now = time.time()
+    log = _request_log[ip]
+    while log and log[0] < now - _RATE_WINDOW_SECS:
+        log.popleft()
+    limit = _RATE_MAX_POST if is_post else _RATE_MAX_GET
+    if len(log) >= limit:
+        return _Response_proxy(
+            content='{"detail":"Rate limit exceeded"}',
+            status_code=429,
+            media_type="application/json",
+        )
+    log.append(now)
+    return None
+
 
 def _resolve_auth(request):
     incoming = request.headers.get("authorization", "")
@@ -67,6 +111,9 @@ def _resolve_auth(request):
 
 @app.post("/api/replicate/predictions")
 async def replicate_create_prediction(request: _Request_proxy):
+    rejected = _check_origin_and_rate(request, is_post=True)
+    if rejected:
+        return rejected
     auth = _resolve_auth(request)
     if not auth:
         return _Response_proxy(
@@ -93,6 +140,9 @@ async def replicate_create_prediction(request: _Request_proxy):
 
 @app.get("/api/replicate/predictions/{prediction_id}")
 async def replicate_get_prediction(prediction_id: str, request: _Request_proxy):
+    rejected = _check_origin_and_rate(request, is_post=False)
+    if rejected:
+        return rejected
     auth = _resolve_auth(request)
     if not auth:
         return _Response_proxy(
