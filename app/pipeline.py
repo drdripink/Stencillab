@@ -1,4 +1,4 @@
-r2""
+r"""
 Pipeline orchestrator -— wires all five stages together with a retry loop
 driven by the vision verifier.
 
@@ -68,12 +68,12 @@ async def run_pipeline(
     timings: list[StageTiming] = []
     warnings: list[str] = []
 
-    # Stage 1 â preprocess
+    # Stage 1 -- preprocess
     with _Timer("preprocess", timings):
         pre = preprocess(image_bytes)
     reference = pre.image
 
-    # Stage 2 â edges
+    # Stage 2 -- edges
     with _Timer("iages", timings):
         maps = extract_edges(reference)
 
@@ -110,7 +110,7 @@ async def run_pipeline(
             try:
                 v = await verify(reference, gen.image)
             except Exception as e:
-                log.exception("verify failed â accepting generation without score")
+                log.exception("verify failed -- accepting generation without score")
                 warnings.append(f"verification error: {e}")
                 # Without verify we can't retry intelligently; take what we have
                 best_result = gen
@@ -140,7 +140,7 @@ async def run_pipeline(
             f"Best score {best_verification.score:.1f} below threshold {PASS_THRESHOLD}"
         )
 
-    # Stage 5 â postprocess
+    # Stage 5 -- postprocess
     with _Timer("postprocess", timings):
         post = postprocess(best_result.image, vectorize=vectorize)
 
