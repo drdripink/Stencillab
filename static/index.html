@@ -1815,7 +1815,7 @@ function processStencilPipeline(imageData, w, h, mode) {
     } else {
       var minA=(weight>=0.95)?0.82:(weight>=0.60)?0.62:0.38;
       if(mode==='simple') minA=Math.max(minA,0.88);
-      var alpha=Math.max(Math.min(1,weight*baseOpacity*1.4),minA);
+      var alpha=Math.max(Math.min(1,weight*baseOpacity*1.0),minA);
       var v=Math.round(255*(1-alpha));
       out_img.data[i*4]=v;out_img.data[i*4+1]=v;out_img.data[i*4+2]=v;out_img.data[i*4+3]=255;
     }
@@ -1851,7 +1851,7 @@ function adjustIntensity(val) {
     if (weight===0){
       out.data[i*4]=255;out.data[i*4+1]=255;out.data[i*4+2]=255;out.data[i*4+3]=255;
     } else {
-      var alpha=Math.min(1,weight*opacity*1.3);
+      var alpha=Math.min(1,weight*opacity*1.0);
       var v=Math.round(255*(1-alpha));
       v=Math.min(v,mode==='simple'?60:mode==='moderate'?40:20);
       out.data[i*4]=v;out.data[i*4+1]=v;out.data[i*4+2]=v;out.data[i*4+3]=255;
