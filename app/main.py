@@ -43,7 +43,7 @@ async def health():
         "providers": {
             "gemini": bool(os.environ.get("GEMINI_API_KEY")),
             "replicate": bool(os.environ.get("REPLICATE_API_TOKEN")),
-            "anthropic": bool(os.environ.get("ANTHROPCI_API_KEY")),
+            "anthropic": bool(os.environ.get("ANTHROPIC_API_KEY")),
         },
     }
 
