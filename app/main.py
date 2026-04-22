@@ -163,6 +163,53 @@ async def replicate_get_prediction(prediction_id: str, request: _Request_proxy):
     )
 
 
+# --- OpenAI proxy route (gpt-image-2 lineart layer for composite stencil) ----
+_OPENAI_BASE = "https://api.openai.com/v1"
+
+
+def _resolve_openai_auth(request):
+    """Server-side token only — never trust client-supplied keys for OpenAI."""
+    server_token = _os_proxy.environ.get("OPENAI_API_KEY")
+    if server_token:
+        return f"Bearer {server_token}"
+    return None
+
+
+@app.post("/api/openai/images/edits")
+async def openai_image_edit(request: _Request_proxy):
+    """Proxy multipart/form-data image edit requests to OpenAI's /v1/images/edits.
+
+    Frontend sends multipart FormData with: image (binary), prompt, model, size, etc.
+    We pass the body + content-type verbatim and inject server-side auth.
+    """
+    rejected = _check_origin_and_rate(request, is_post=True)
+    if rejected:
+        return rejected
+    auth = _resolve_openai_auth(request)
+    if not auth:
+        return _Response_proxy(
+            content='{"detail":"No OpenAI token configured on server"}',
+            status_code=401,
+            media_type="application/json",
+        )
+    body = await request.body()
+    content_type = request.headers.get("content-type", "application/octet-stream")
+    async with _httpx_proxy.AsyncClient(timeout=180.0) as client:
+        resp = await client.post(
+            f"{_OPENAI_BASE}/images/edits",
+            content=body,
+            headers={
+                "Content-Type": content_type,
+                "Authorization": auth,
+            },
+        )
+    return _Response_proxy(
+        content=resp.content,
+        status_code=resp.status_code,
+        media_type=resp.headers.get("content-type", "application/json"),
+    )
+
+
 # Static frontend (mounted last so /api/* takes priority)
 STATIC_DIR = Path(__file__).parent.parent / "static"
 if STATIC_DIR.exists():
