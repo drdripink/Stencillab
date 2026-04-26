@@ -1473,6 +1473,31 @@ var PROMPT_SHADING = [
   'Final output: a faithful, white-background shading map using mid-grey hatching — the shading layer of a professional tattoo stencil.'
 ].join('\n');
 
+var bananaPrompt = [
+  'Convert the provided reference image into a clean, professional tattoo stencil — the kind a master tattoo artist would prepare for a high-end client. The output must be a faithful black-and-white line stencil ready for thermal transfer to skin.',
+  '',
+  'FAITHFULNESS IS THE ABSOLUTE RULE. Reproduce only what is visibly present in the source image. Every line must correspond to a real edge or feature in the reference. Do not invent, embellish, reinterpret, or "improve" the subject. If something is not in the source, it does not appear in the output.',
+  '',
+  'Execute as professional stencil art:',
+  '- Pure black linework on pure white background',
+  '- Clean, confident, continuous vector-style strokes — smooth flowing lines, not photographic edges',
+  '- Intentional line-weight variation: bolder for primary contours, finer for interior detail',
+  '- Tonal areas of the source rendered as parallel hatching, cross-hatching, or stippling — mapped accurately to actual shadow zones',
+  '- Crisp, printable clarity at any scale',
+  '',
+  'STRICTLY DO NOT INCLUDE:',
+  '- Background textures, patterns, scenery, or environmental elements',
+  '- Cracks, distressing, weathering, grunge, or aged-paper effects',
+  '- Decorative borders, frames, banners, or ornamental flourishes not present in the source',
+  '- Objects, subjects, or figures not present in the reference',
+  '- Color, gray photographic tones, soft gradients, or anti-aliasing blur',
+  '- Artistic signatures, watermarks, or text',
+  '',
+  'NEGATIVE SPACE IS PROTECTED. Where the reference is empty, uniform, or featureless, the stencil must also be empty — pure white, untouched. Do not fill blank areas with invented detail.',
+  '',
+  'Final output: a clean, faithful, professional tattoo stencil — maximum craftsmanship, zero invented content, ready to transfer directly to skin.'
+].join('\n');
+
 // Composite lineart (top) over shading (bottom) onto a white canvas.
 // Algorithm:
 //   1. Shading: pixels darker than ~240 become blended mid-grey at 35% opacity, proportional to darkness
@@ -1684,58 +1709,24 @@ async function generateStencil(){
     ctx.drawImage(img,ox,oy,sw,sh);
     if(hasRep){
       try{
-        // Prepare source image — PNG data URL for Replicate, Blob for OpenAI multipart
         var srcDataUrl = canvas.toDataURL('image/png');
-        var srcBlob = dataUrlToBlob(srcDataUrl);
-
-        // Fire both specialists in parallel. Promise.allSettled so a single failure doesn't kill the flow.
-        var lineartPromise = callOpenAIImageEdit({
-          imageBlob: srcBlob,
-          prompt: PROMPT_LINEART,
-          model: 'gpt-image-2',
-          size: '1024x1024',
-          quality: 'high'
-        }).then(function(dataUrl){ return loadImage(dataUrl); });
-
-        var shadingPromise = callReplicate('google/nano-banana-2', {
-          prompt: PROMPT_SHADING,
+        var output = await callReplicate('google/nano-banana-pro', {
+          prompt: bananaPrompt,
           image_input: [srcDataUrl],
           output_format: 'png',
-          aspect_ratio: 'match_input_image'
-        }).then(function(output){
-          var u = Array.isArray(output) ? output[0] : output;
-          return loadImage(u, 'anonymous');
+          aspect_ratio: 'match_input_image',
+          resolution: '4K',
+          safety_filter_level: 'block_only_high'
         });
-
-        var results = await Promise.allSettled([lineartPromise, shadingPromise]);
-        var lineartImg = results[0].status === 'fulfilled' ? results[0].value : null;
-        var shadingImg = results[1].status === 'fulfilled' ? results[1].value : null;
-
-        // Log any failures so they show up in console for debugging
-        if (results[0].status === 'rejected') console.error('Lineart (gpt-image-2) failed:', results[0].reason);
-        if (results[1].status === 'rejected') console.error('Shading (nano-banana-2) failed:', results[1].reason);
-
-        if (!lineartImg && !shadingImg) {
-          var lm = (results[0].reason && results[0].reason.message) || 'unknown';
-          var sm = (results[1].reason && results[1].reason.message) || 'unknown';
-          throw new Error('Both models failed. Line: ' + lm + ' | Shade: ' + sm);
-        }
-
-        // Graceful degradation: warn if one layer is missing but still composite what we have
-        if (lineartImg && !shadingImg) {
-          showToast('Shading layer failed — lineart only', 'error');
-        } else if (!lineartImg && shadingImg) {
-          showToast('Lineart layer failed — shading only', 'error');
-        }
-
-        var composite = compositeStencilLayers(lineartImg, shadingImg, SIZE);
-        STATE.stencilOutput = composite;
+        var aiUrl = Array.isArray(output) ? output[0] : output;
+        var aiImg = await loadImage(aiUrl, 'anonymous');
+        STATE.stencilOutput = aiUrl;
         STATE.stencilLoading = false;
         render();
-        showToast((lineartImg && shadingImg) ? 'Composite stencil generated' : 'Partial stencil generated', 'success');
+        showToast('Stencil generated', 'success');
         return;
       } catch(aiErr) {
-        console.error('Composite stencil error:', aiErr);
+        console.error('Stencil AI error:', aiErr);
         showToast('AI error — using local fallback: ' + aiErr.message, 'error');
       }
     }
