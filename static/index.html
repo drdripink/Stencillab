@@ -1473,7 +1473,51 @@ var PROMPT_SHADING = [
   'Final output: a faithful, white-background shading map using mid-grey hatching — the shading layer of a professional tattoo stencil.'
 ].join('\n');
 
-var bananaPrompt = "Convert the provided image into a realistic tattoo stencil line drawing. Maintain exactly the proportions, composition, and details of the original. Do not change the position, size, or shape of any element. Do not modify expressions, perspectives, or proportions of the face or body. Generate the result using only clean, sharp, precise black lines on a white background, without color, shadows, or fills. Use the shadow, highlight, and filled areas of the original as a guide to mark: main outlines, detail lines, boundaries of important highlights and shadows, relevant textures (such as hair, skin, beard, folds, etc.). The result must look like a professional technical tattoo stencil, ready for transfer, with all lines well-defined, connected, and proportions intact. Do not add, remove, or modify anything from the original image: just translate it into a technical black linear format. Level of detail: high. Maintain total fidelity to the original design, without excessive simplification.";
+var bananaPrompt = [
+  'Convert the provided image into a professional technical tattoo stencil — a clean, comprehensive line drawing with explicit shadow mapping that a tattoo artist uses as their working blueprint for thermal transfer to skin.',
+  '',
+  'CRITICAL — LINE STYLE:',
+  '- Every line is SOLID PURE BLACK (#000000) at 100% opacity — never gray, faded, or low-opacity',
+  '- ALL lines are CLEAN, SMOOTH, and uniformly thin — like a fine technical pen drafting, not hand-drawn or sketchy or wavering',
+  '- Single uniform line weight throughout — no thick/thin hierarchy, no bold contours',
+  '- Continuous confident strokes — no broken, hesitant, or scratchy linework',
+  '',
+  'STRICTLY NO HEAVY BLACK / NO SOLID FILLS — OUTLINES ONLY:',
+  '- NO solid black blobs, masses, or filled-in regions anywhere in the output',
+  '- NO heavy black areas (e.g., do not fill open mouths black, do not fill nose tips black, do not fill dark eye centers black, do not fill dark fur patches solid)',
+  '- Even the darkest areas of the source must be rendered as a THIN BLACK OUTLINE around the dark zone — never as a filled black region',
+  '- If the source has a solid dark shape, draw only its boundary',
+  '- The output should never have any visible "black mass" larger than a thin line',
+  '',
+  'COMPREHENSIVE DETAIL CAPTURE:',
+  '- Capture ALL visible details from the source — every contour, edge, fold, texture, fur grain, feature',
+  '- Maintain total fidelity to the source: exact proportions, exact composition, exact expression, exact character details (preserve scars, closed eyes, unique features, asymmetries)',
+  '- Do not simplify, omit, or skip details. Do not invent or add details.',
+  '- Level of detail: maximum',
+  '',
+  'SHADOW MAPPING & SHADING PATTERNS — REQUIRED:',
+  '- Map out shadow patterns and shading using DASHED or DOTTED hint-lines (NEVER solid hatching, NEVER filled tones)',
+  '- Mark shadow boundary lines with thin DASHED strokes — these are guides for the artist showing where shadows fall',
+  '- Indicate shaded zones with sparse parallel DOTTED or DASHED strokes following the form of the surface (e.g., curving along a cheek, following the jawline, beneath the brow)',
+  '- Shadow mapping examples: dashed lines under the chin, beside the nose, in eye sockets, under hair, beneath features, in fur recesses, along stripe shadows, in folds of clothing or skin',
+  '- The shadow mapping must be VISIBLE and EXPLICIT — a tattoo artist must be able to read where every shadow falls just from the stencil',
+  '- All tonal/value information from the source must be communicated through dashed/dotted shadow mapping, NEVER through solid black fills',
+  '',
+  'STRICTLY DO NOT INCLUDE:',
+  '- Solid black filled areas, blobs, masses, or heavy black regions of any kind',
+  '- Solid hatching, cross-hatching, or filled stippling (use only DASHED/DOTTED hint-lines)',
+  '- Hand-drawn wavering, sketchy, or imperfect strokes (lines must be clean and smooth)',
+  '- Bold thick outlines, marker-style strokes, or line-weight hierarchy',
+  '- Gray, faded, washed-out, or low-opacity strokes',
+  '- Background textures, patterns, scenery, environmental elements, cracks, distressing, weathering, or aged-paper effects',
+  '- Decorative borders, frames, banners, or ornamental flourishes not present in the source',
+  '- Color, gray photographic tones, soft gradients, or anti-aliasing blur',
+  '- Artistic signatures, watermarks, or text',
+  '',
+  'NEGATIVE SPACE: Pure white background. Inside the subject, white space between lines is preserved — the stencil is open and readable, not crowded.',
+  '',
+  'Final output: a professional technical tattoo stencil with comprehensive detail capture AND explicit dashed/dotted shadow mapping. Clean smooth thin pure-black lines on pure white, outlines only with shadow zones marked via dashed hint-lines, ready for thermal transfer to skin.'
+].join(\"\\\\n\");
 
 // Composite lineart (top) over shading (bottom) onto a white canvas.
 // Algorithm:
